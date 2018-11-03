@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">WebBrowser</string>
+
+    <string name="go_to">go to</string>
+    <string name="distance">distance</string>
+    <string name="font_size">font size</string>
+    <string name="ok">ok</string>
+    <string name="brightness">brightness</string>
+    <string name="size_factor">size factor</string>
+    <string name="brightness_factor">brightness factor</string>
+
+    <string name="calibrate">Calibrate!</string>
+    <string name="reset">Reset</string>
+    <string name="currentDistance">Distance</string>
+    <string name="showMiddlePoint">Middle eye point</string>
+    <string name="showEyePoints">Eye points</string>
+</resources>
