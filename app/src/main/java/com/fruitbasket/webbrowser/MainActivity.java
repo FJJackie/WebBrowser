@@ -333,8 +333,10 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
         if (webView != null) {
             //根据距离经过计算设置字体大小
+            //算法5-3 44页
             int fontsize =(int)(5.5*message.getDistToFace()*metrics.densityDpi/(6000*2.54*0.45));
             if(fontsize>0) {
+                //改变网页内容 字体大小和前后景反差颜色
                 changeFontSizeAndContrast(fontsize);
                 Toast.makeText(MainActivity.this, "fontsize: " + fontsize, Toast.LENGTH_SHORT).show();
             }
