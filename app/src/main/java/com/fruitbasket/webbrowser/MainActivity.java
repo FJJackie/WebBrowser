@@ -255,6 +255,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
         tvEyeDistance=(TextView)findViewById(R.id.tv_eye_distance);
         tvAngle=(TextView)findViewById(R.id.tv_angle);
 
+        //webView 部分
         webView = (WebView) findViewById(R.id.web_view);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
@@ -264,7 +265,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
     /**
      *
-     * @param brightness
+     * @param brightness 亮度
      */
     private void setBrightness(float brightness) {
         WindowManager.LayoutParams lp = getWindow().getAttributes();
@@ -400,6 +401,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     依据传入的字体大小改变网页前景和背景颜色
      */
     private void changeFontSizeAndContrast(int fontsize){
+                                                //公式4-19 由字体换算出对比度阈值
         String js = "javascript:(function(){  var contrast = -0.0425*"+fontsize+"+0.85; " +
                 "    var body = document.getElementsByTagName('body')[0]; " +
                 "var bgL =0;"+
@@ -411,6 +413,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
                 "            for(var  g= 0; g<=255;g++){ " +
                 "                fgL =0.2126*r+0.7152*g+0.0722*b; " +
                 "                result =Math.abs(contrast-Math.abs(fgL/255)); " +
+                                //获得最小的eps
                 "                if(result<eps){ " +
                 "                    eps = result; " +
                 "                    fgr = r; " +
