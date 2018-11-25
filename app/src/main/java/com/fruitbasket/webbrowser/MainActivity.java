@@ -339,10 +339,11 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
         double l0 = lb+30;
         //计算最佳亮度 公式4-7
         double lP = lb+Math.pow((vDp/vD0),2)*(l0-lb);
-        //屏幕亮度
+
+        //窗口屏幕亮度调整?
         layoutParams.screenBrightness =(float)lP/255 >=1? 1:(float)lP/255;
         getWindow().setAttributes(layoutParams);
-        
+
         //更改网页显示效果
         if (webView != null) {
             //根据距离经过计算设置字体大小
