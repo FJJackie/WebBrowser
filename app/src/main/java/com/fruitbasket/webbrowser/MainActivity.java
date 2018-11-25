@@ -315,23 +315,35 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-        //获得屏幕尺寸后计算屏幕的实际大小
+        //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
+
+        //dm: density(密度) * 标准dpi
+        //标准dpi = 160
         double dm = metrics.density*160;
+        //利用勾股定理求得屏幕的对角线长度 单位Inch
+        //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
         double x = Math.pow(metrics.widthPixels/dm,2);
         double y = Math.pow(metrics.heightPixels/dm,2);
         final double screenInch = Math.sqrt(x+y);
 
         double heightPixel = metrics.heightPixels;
         double widthPixel = metrics.widthPixels;
+        //论文公式4-3   vD0：对应论文中的MaxD
+        //疑问：widthPixel??
         final double vD0 = screenInch/(Math.sqrt(Math.pow((1.0*widthPixel/heightPixel),2)+1)*widthPixel*Math.tan(1/60.0*Math.PI/180));
+        //获取的人脸到设备的距离
         double vDp = message.getDistToFace();
+
+        //l0 目标亮度值
+        //l0 ??? 为什么等于lb+30
         double l0 = lb+30;
+        //计算最佳亮度 公式4-7
         double lP = lb+Math.pow((vDp/vD0),2)*(l0-lb);
         //屏幕亮度
         layoutParams.screenBrightness =(float)lP/255 >=1? 1:(float)lP/255;
         getWindow().setAttributes(layoutParams);
-
-
+        
+        //更改网页显示效果
         if (webView != null) {
             //根据距离经过计算设置字体大小
             //算法5-3 44页
@@ -396,8 +408,9 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
         //String js ="javascript:"+"var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { font-size : "+fontsize+"px !important;}；document.body.appendChild(sheet)';document.body.appendChild(sheet);";
         webView.loadUrl(js);
     }
+
     /*
-    疑似这个方法使用js代码改变了字体和背景
+    这个方法使用js代码改变了字体和背景
     依据传入的字体大小改变网页前景和背景颜色
      */
     private void changeFontSizeAndContrast(int fontsize){
@@ -411,6 +424,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
                 "    for(var b = 0;b<=255;b++){ " +
                 "        for (var r =0;r<=255;r++){ " +
                 "            for(var  g= 0; g<=255;g++){ " +
+                                //公式4-17 根据RGB值计算相对色彩亮度
                 "                fgL =0.2126*r+0.7152*g+0.0722*b; " +
                 "                result =Math.abs(contrast-Math.abs(fgL/255)); " +
                                 //获得最小的eps
