@@ -35,19 +35,20 @@ import com.fruitbasket.webbrowser.messages.MessageListener;
 import com.fruitbasket.webbrowser.utils.JsObject;
 
 
-public class MainActivity extends Activity implements MessageListener,SensorEventListener {
-    private static final String TAG ="MainActivity";
+public class MainActivity extends Activity implements MessageListener, SensorEventListener {
+    private static final String TAG = "MainActivity";
 
     public static final String CAM_SIZE_WIDTH = "intent_cam_size_width";
     public static final String CAM_SIZE_HEIGHT = "intent_cam_size_height";
     public static final String AVG_NUM = "intent_avg_num";
     public static final String PROBANT_NAME = "intent_probant_name";
-    private static final int BRIGHTNESS_FACTOR_DEFAULT=1;
-    private static final int FONT_SIZE_FACTOR_DEFAULT=1;
+    private static final int BRIGHTNESS_FACTOR_DEFAULT = 1;
+    private static final int FONT_SIZE_FACTOR_DEFAULT = 1;
 
     private RelativeLayout part1;
     private LinearLayout part2;
 
+    //UI控件部分
     private CameraSurfaceView _mySurfaceView;
     Camera _cam;
     TextView _currentDistanceView;
@@ -76,8 +77,8 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     private SensorManager sensorManager;
     private Sensor sensor;
     private double lb;
-    private WindowManager.LayoutParams layoutParams ;
-    private int count =0;
+    private WindowManager.LayoutParams layoutParams;
+    private int count = 0;
 
     private float _currentDevicePosition;
     private int _cameraHeight;
@@ -85,46 +86,47 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     private int _avgNum;
     private float distToFace;
     private float brightnessValue;///环境光亮度值
-    private int fontSizeFactor =FONT_SIZE_FACTOR_DEFAULT;///后期可取消这两个值
-    private int bFactor =BRIGHTNESS_FACTOR_DEFAULT;///
+    private int fontSizeFactor = FONT_SIZE_FACTOR_DEFAULT;///后期可取消这两个值
+    private int bFactor = BRIGHTNESS_FACTOR_DEFAULT;///
 
-    private float lastDistToFace=-1f;
-    private int lastRealX=0;
+    private float lastDistToFace = -1f;
+    private int lastRealX = 0;
 
     private final static DecimalFormat _decimalFormater = new DecimalFormat("0.0");
 
     @Override
     public void onStart() {
         super.onStart();
-        Log.i(TAG,"onStart()");
+        Log.i(TAG, "onStart()");
     }
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG,"onCreat(Bundle)");
+        Log.i(TAG, "onCreat(Bundle)");
         setContentView(R.layout.activity_main);
 
         //加入权限动态申请方可正常启动 否则闪退
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[] {Manifest.permission.CAMERA}, 1);
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
             }
         }
 
         initViews();
         layoutParams = getWindow().getAttributes();
-        sensorManager=(SensorManager)getSystemService(SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG,"onResume()");
-        sensorManager.registerListener(this,sensor,SensorManager.SENSOR_DELAY_NORMAL);
+        Log.i(TAG, "onResume()");
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        //注册事件监听器
         MessageHUB.get().registerListener(this);
 
-         _cam = Camera.open(1);
+        _cam = Camera.open(1);
         Camera.Parameters param = _cam.getParameters();
 
         /*
@@ -161,7 +163,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     @Override
     protected void onPause() {
         super.onPause();
-        Log.i(TAG,"onPause()");
+        Log.i(TAG, "onPause()");
         MessageHUB.get().unregisterListener(this);
         resetCam();
     }
@@ -169,13 +171,13 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     @Override
     public void onStop() {
         super.onStop();
-        Log.i(TAG,"onStop()");
-        sensorManager.unregisterListener(this,sensor);
+        Log.i(TAG, "onStop()");
+        sensorManager.unregisterListener(this, sensor);
     }
 
     @Override
     public void onMessage(final int messageID, final Object message) {
-        Log.i(TAG,"onMessage(int,Object)");
+        Log.i(TAG, "onMessage(int,Object)");
         switch (messageID) {
             case MessageHUB.MEASUREMENT_STEP:
                 /*count++;
@@ -199,18 +201,18 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.i(TAG,"onSensorChanged(SensorEvent)");
-        lb =event.values[0];
+        Log.i(TAG, "onSensorChanged(SensorEvent)");
+        lb = event.values[0];
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        Log.i(TAG,"onAccuracyChanged(Sensor,int)");
+        Log.i(TAG, "onAccuracyChanged(Sensor,int)");
     }
 
     private void initViews() {
-        part1=(RelativeLayout)findViewById(R.id.part1);
-        part2=(LinearLayout)findViewById(R.id.part2);
+        part1 = (RelativeLayout) findViewById(R.id.part1);
+        part2 = (LinearLayout) findViewById(R.id.part2);
 
         _mySurfaceView = (CameraSurfaceView) findViewById(R.id.surface_camera);
         RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(
@@ -233,38 +235,37 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
         fontSizeOk = (Button) findViewById(R.id.font_size_ok);
         fontSizeOk.setOnClickListener(listener);
 
-        sizeFactor=(EditText)findViewById(R.id.size_factor);
-        sizeFactorOk=(Button)findViewById(R.id.size_factor_ok);
+        sizeFactor = (EditText) findViewById(R.id.size_factor);
+        sizeFactorOk = (Button) findViewById(R.id.size_factor_ok);
         sizeFactorOk.setOnClickListener(listener);
 
-        sizeView =(TextView)findViewById(R.id.size_view);
+        sizeView = (TextView) findViewById(R.id.size_view);
 
-        brightness=(EditText)findViewById(R.id.brightness);
-        brightnessOk=(Button)findViewById(R.id.brightness_ok);
+        brightness = (EditText) findViewById(R.id.brightness);
+        brightnessOk = (Button) findViewById(R.id.brightness_ok);
         brightnessOk.setOnClickListener(listener);
 
-        brightnessFactor=(EditText)findViewById(R.id.brightness_factor);
-        brightnessFactorOk=(Button)findViewById(R.id.brightness_ok);
+        brightnessFactor = (EditText) findViewById(R.id.brightness_factor);
+        brightnessFactorOk = (Button) findViewById(R.id.brightness_ok);
         brightnessFactorOk.setOnClickListener(listener);///写处理
 
-        backgroundBrightness=(TextView)findViewById(R.id.background_brightness);
-        brightnessView =(TextView)findViewById(R.id.brightness_view);
+        backgroundBrightness = (TextView) findViewById(R.id.background_brightness);
+        brightnessView = (TextView) findViewById(R.id.brightness_view);
 
-        etEyeDistance=(EditText)findViewById(R.id.et_eye_distance);
-        tvMoveDistance=(TextView)findViewById(R.id.tv_move_distance);
-        tvEyeDistance=(TextView)findViewById(R.id.tv_eye_distance);
-        tvAngle=(TextView)findViewById(R.id.tv_angle);
+        etEyeDistance = (EditText) findViewById(R.id.et_eye_distance);
+        tvMoveDistance = (TextView) findViewById(R.id.tv_move_distance);
+        tvEyeDistance = (TextView) findViewById(R.id.tv_eye_distance);
+        tvAngle = (TextView) findViewById(R.id.tv_angle);
 
         //webView 部分
         webView = (WebView) findViewById(R.id.web_view);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
-        webView.addJavascriptInterface(new JsObject(MainActivity.this),"injectedObject");
+        webView.addJavascriptInterface(new JsObject(MainActivity.this), "injectedObject");
         webView.loadUrl("https://www.v2ex.com/t/350509#reply106");
     }
 
     /**
-     *
      * @param brightness 亮度
      */
     private void setBrightness(float brightness) {
@@ -275,6 +276,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
     /**
      * Sets the current eye distance to the calibration point.
+     *
      * @param v
      */
     public void pressedCalibrate(final View v) {
@@ -305,10 +307,17 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
     /**
      * Update the UI values.
+     * 此方法需要被重构
+     * 重构思路
+     *
+     * 1 计算屏幕的实际大小可以作为初始化的内容一开始就计算出来 以后直接使用
+     * 2 计算maxD的方法
+     * 3 计算目标亮度的方法
      * @param message
      */
     public void updateUI(final MeasurementStepMessage message) {
-        Log.i(TAG,"updateUI(MeasurementStepMessage)");
+        Log.i(TAG, "updateUI(MeasurementStepMessage)");
+
         _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
         float fontRatio = message.getDistToFace() / 29.7f;
         _currentDistanceView.setTextSize(fontRatio * 20);
@@ -319,66 +328,66 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
         //dm: density(密度) * 标准dpi
         //标准dpi = 160
-        double dm = metrics.density*160;
+        double dm = metrics.density * 160;
         //利用勾股定理求得屏幕的对角线长度 单位Inch
         //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
-        double x = Math.pow(metrics.widthPixels/dm,2);
-        double y = Math.pow(metrics.heightPixels/dm,2);
-        final double screenInch = Math.sqrt(x+y);
+        double x = Math.pow(metrics.widthPixels / dm, 2);
+        double y = Math.pow(metrics.heightPixels / dm, 2);
+        final double screenInch = Math.sqrt(x + y);
 
         double heightPixel = metrics.heightPixels;
         double widthPixel = metrics.widthPixels;
+
         //论文公式4-3   vD0：对应论文中的MaxD
-        //疑问：widthPixel??
-        final double vD0 = screenInch/(Math.sqrt(Math.pow((1.0*widthPixel/heightPixel),2)+1)*widthPixel*Math.tan(1/60.0*Math.PI/180));
+        //疑问：widthPixel?? 与论文不对应
+        final double vD0 = screenInch / (Math.sqrt(Math.pow((1.0 * widthPixel / heightPixel), 2) + 1) * widthPixel * Math.tan(1 / 60.0 * Math.PI / 180));
         //获取的人脸到设备的距离
         double vDp = message.getDistToFace();
 
         //l0 目标亮度值
         //l0 ??? 为什么等于lb+30
-        double l0 = lb+30;
+        double l0 = lb + 30;
         //计算最佳亮度 公式4-7
-        double lP = lb+Math.pow((vDp/vD0),2)*(l0-lb);
+        double lP = lb + Math.pow((vDp / vD0), 2) * (l0 - lb);
 
         //窗口屏幕亮度调整?
-        layoutParams.screenBrightness =(float)lP/255 >=1? 1:(float)lP/255;
+        layoutParams.screenBrightness = (float) lP / 255 >= 1 ? 1 : (float) lP / 255;
         getWindow().setAttributes(layoutParams);
 
         //更改网页显示效果
         if (webView != null) {
             //根据距离经过计算设置字体大小
             //算法5-3 44页
-            int fontsize =(int)(5.5*message.getDistToFace()*metrics.densityDpi/(6000*2.54*0.45));
-            if(fontsize>0) {
+            int fontsize = (int) (5.5 * message.getDistToFace() * metrics.densityDpi / (6000 * 2.54 * 0.45));
+            if (fontsize > 0) {
                 //改变网页内容 字体大小和前后景反差颜色
                 changeFontSizeAndContrast(fontsize);
                 Toast.makeText(MainActivity.this, "fontsize: " + fontsize, Toast.LENGTH_SHORT).show();
             }
-        }
-        else{
-            Log.d(TAG,"webView is null");
+        } else {
+            Log.d(TAG, "webView is null");
         }
 
         //计算角度
-        double angle=0;
-        if(lastDistToFace>0){
+        double angle = 0;
+        if (lastDistToFace > 0) {
             String string;
-            if(TextUtils.isEmpty(string=etEyeDistance.getText().toString().trim())==false){
-                float eyeDistance=Float.valueOf(string);
-                angle=Math.atan(eyeDistance*Math.abs(message.getRealX()-lastRealX)/(message.getHalfEyeDist()*2)/message.getDistToFace());
-                Log.d(TAG,"message.getRealX()= "+message.getRealX());
-                Log.d(TAG,"lastRealX= "+lastRealX);
-                Log.d(TAG,"eye distance(p)= "+message.getHalfEyeDist()*2);
-                Log.d(TAG,"distance to face(cm)= "+message.getDistToFace());
-                tvMoveDistance.setText("move dist(p): "+Math.abs(message.getRealX()-lastRealX));
-                tvEyeDistance.setText("eye dist(p): "+message.getHalfEyeDist()*2);
+            if (TextUtils.isEmpty(string = etEyeDistance.getText().toString().trim()) == false) {
+                float eyeDistance = Float.valueOf(string);
+                angle = Math.atan(eyeDistance * Math.abs(message.getRealX() - lastRealX) / (message.getHalfEyeDist() * 2) / message.getDistToFace());
+                Log.d(TAG, "message.getRealX()= " + message.getRealX());
+                Log.d(TAG, "lastRealX= " + lastRealX);
+                Log.d(TAG, "eye distance(p)= " + message.getHalfEyeDist() * 2);
+                Log.d(TAG, "distance to face(cm)= " + message.getDistToFace());
+                tvMoveDistance.setText("move dist(p): " + Math.abs(message.getRealX() - lastRealX));
+                tvEyeDistance.setText("eye dist(p): " + message.getHalfEyeDist() * 2);
             }
         }
-        lastDistToFace=message.getDistToFace();
-        lastRealX=message.getRealX();
+        lastDistToFace = message.getDistToFace();
+        lastRealX = message.getRealX();
 
-        Log.i(TAG,"angle= "+angle);
-        tvAngle.setText("angle: "+String.valueOf(angle));
+        Log.i(TAG, "angle= " + angle);
+        tvAngle.setText("angle: " + String.valueOf(angle));
     }
 
     private void resetCam() {
@@ -390,22 +399,24 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
     /**
      * 动态改变网页的背景和前景。bg和fg代表背景和前景色，可以是英文颜色名，也可以是rgb值（#RRGGBB）
+     * 未被使用
      * @param bg
      * @param fg
      */
-    private void changeFgAndBg(String bg,String fg ){
+    private void changeFgAndBg(String bg, String fg) {
         webView.getSettings().setJavaScriptEnabled(true);
-        String js ="javascript:"+"var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { color : "+fg+" !important;background: "+bg+"!important}';document.body.appendChild(sheet);";
+        String js = "javascript:" + "var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { color : " + fg + " !important;background: " + bg + "!important}';document.body.appendChild(sheet);";
         webView.loadUrl(js);
     }
 
     /**
      * 动态改变网页的字体大小
+     * 未被使用
      * @param fontsize
      */
-    private void changeFontSize(int fontsize){
+    private void changeFontSize(int fontsize) {
         webView.getSettings().setJavaScriptEnabled(true);
-        String js = "javascript:(function(){ var css = '* { font-size : "+ fontsize + "px !important ; }';var style = document.getElementsByTagName('style');if(style.length==0){style = document.createElement('style');}else{style = document.getElementsByTagName('style')[0];}        if (style.styleSheet){ style.style.styleSheet.cssText=css;}else{style.appendChild(document.createTextNode(css));} document.getElementsByTagName('head')[0].appendChild(style);})()";
+        String js = "javascript:(function(){ var css = '* { font-size : " + fontsize + "px !important ; }';var style = document.getElementsByTagName('style');if(style.length==0){style = document.createElement('style');}else{style = document.getElementsByTagName('style')[0];}        if (style.styleSheet){ style.style.styleSheet.cssText=css;}else{style.appendChild(document.createTextNode(css));} document.getElementsByTagName('head')[0].appendChild(style);})()";
         //String js ="javascript:"+"var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { font-size : "+fontsize+"px !important;}；document.body.appendChild(sheet)';document.body.appendChild(sheet);";
         webView.loadUrl(js);
     }
@@ -414,21 +425,21 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
     这个方法使用js代码改变了字体和背景
     依据传入的字体大小改变网页前景和背景颜色
      */
-    private void changeFontSizeAndContrast(int fontsize){
-                                                //公式4-19 由字体换算出对比度阈值
-        String js = "javascript:(function(){  var contrast = -0.0425*"+fontsize+"+0.85; " +
+    private void changeFontSizeAndContrast(int fontsize) {
+        //公式4-19 由字体换算出对比度阈值
+        String js = "javascript:(function(){  var contrast = -0.0425*" + fontsize + "+0.85; " +
                 "    var body = document.getElementsByTagName('body')[0]; " +
-                "var bgL =0;"+
+                "var bgL =0;" +
                 "    var eps = 1; " +
                 "    var fgr,fgg,fgb,result,fgl; " +
                 "    console.log('bgL'+bgL); " +
                 "    for(var b = 0;b<=255;b++){ " +
                 "        for (var r =0;r<=255;r++){ " +
                 "            for(var  g= 0; g<=255;g++){ " +
-                                //公式4-17 根据RGB值计算相对色彩亮度
+                //公式4-17 根据RGB值计算相对色彩亮度
                 "                fgL =0.2126*r+0.7152*g+0.0722*b; " +
                 "                result =Math.abs(contrast-Math.abs(fgL/255)); " +
-                                //获得最小的eps
+                //获得最小的eps
                 "                if(result<eps){ " +
                 "                    eps = result; " +
                 "                    fgr = r; " +
@@ -444,7 +455,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
                 "    sheet =document.createElement('style'); " +
                 "    else  " +
                 "    sheet = document.getElementsByTagName('style')[0]; " +
-                "    sheet.innerHTML=' * { color : rgb('+fgr+','+fgg+','+fgb+') !important; background: black !important;font-size: "+fontsize+"px !important}';  " +
+                "    sheet.innerHTML=' * { color : rgb('+fgr+','+fgg+','+fgb+') !important; background: black !important;font-size: " + fontsize + "px !important}';  " +
                 "    document.body.appendChild(sheet);alert('finish');}" +
                 " )()";
         webView.loadUrl(js);
@@ -488,7 +499,7 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
                         Log.e(TAG, "Go ot error");
                     }
                     break;
-                    //设置字体
+                //设置字体
                 case R.id.font_size_ok:
                     Log.i(TAG, "Button fontSizeOk has been clicked");
 
@@ -504,29 +515,28 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
                     break;
 
                 case R.id.size_factor_ok:
-                    Log.i(TAG,"size_factor_ok has been clicked");
-                    String sizeFactorString=sizeFactor.getText().toString().trim();
-                    if(sizeFactorString!=null
-                            && TextUtils.isEmpty(sizeFactorString)==false){
-                        fontSizeFactor =Integer.parseInt(sizeFactorString);
+                    Log.i(TAG, "size_factor_ok has been clicked");
+                    String sizeFactorString = sizeFactor.getText().toString().trim();
+                    if (sizeFactorString != null
+                            && TextUtils.isEmpty(sizeFactorString) == false) {
+                        fontSizeFactor = Integer.parseInt(sizeFactorString);
                     }
                     break;
 
                 case R.id.brightness_ok:
-                    Log.i(TAG,"brightness_ok has been clicked.");
-                    String brightnessString=brightness.getText().toString().trim();
-                    if(TextUtils.isEmpty(brightnessString)==false){
+                    Log.i(TAG, "brightness_ok has been clicked.");
+                    String brightnessString = brightness.getText().toString().trim();
+                    if (TextUtils.isEmpty(brightnessString) == false) {
                         setBrightness(Float.parseFloat(brightnessString));
-                    }
-                    else{
+                    } else {
                     }
                     break;
 
                 case R.id.brightness_factor_ok:
-                    Log.i(TAG,"brightness_factor_ok: has been clicked");
-                    String bFactorString=brightnessFactor.getText().toString().trim();
-                    if(TextUtils.isEmpty(bFactorString)==false){
-                        bFactor=Integer.parseInt(bFactorString);
+                    Log.i(TAG, "brightness_factor_ok: has been clicked");
+                    String bFactorString = brightnessFactor.getText().toString().trim();
+                    if (TextUtils.isEmpty(bFactorString) == false) {
+                        bFactor = Integer.parseInt(bFactorString);
                     }
                     break;
 
@@ -540,11 +550,11 @@ public class MainActivity extends Activity implements MessageListener,SensorEven
 
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
-            float[] values=sensorEvent.values;
-            switch(sensorEvent.sensor.getType()){
+            float[] values = sensorEvent.values;
+            switch (sensorEvent.sensor.getType()) {
                 //动态更新光线信息
                 case Sensor.TYPE_LIGHT:
-                    brightnessValue=values[0];
+                    brightnessValue = values[0];
                     break;
             }
         }
