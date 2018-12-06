@@ -231,6 +231,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         goTo = (Button) findViewById(R.id.go_to);
         goTo.setOnClickListener(listener);
         url = (EditText) findViewById(R.id.url);
+
         fontSize = (EditText) findViewById(R.id.font_size);
         fontSizeOk = (Button) findViewById(R.id.font_size_ok);
         fontSizeOk.setOnClickListener(listener);
@@ -244,10 +245,10 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         brightness = (EditText) findViewById(R.id.brightness);
         brightnessOk = (Button) findViewById(R.id.brightness_ok);
         brightnessOk.setOnClickListener(listener);
-
+        //亮度因素
         brightnessFactor = (EditText) findViewById(R.id.brightness_factor);
         brightnessFactorOk = (Button) findViewById(R.id.brightness_ok);
-        brightnessFactorOk.setOnClickListener(listener);///写处理
+        brightnessFactorOk.setOnClickListener(listener);
 
         backgroundBrightness = (TextView) findViewById(R.id.background_brightness);
         brightnessView = (TextView) findViewById(R.id.brightness_view);
@@ -300,35 +301,41 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     public void onShowEyePoints(final View view) {
-        // Is the toggle on?
+        // Is the toggle on? 检查开关按钮是否开启
         boolean on = ((Switch) view).isChecked();
         _mySurfaceView.showEyePoints(on);
     }
 
     /**
-     * Update the UI values.
+     * Update the UI params.
      * 此方法需要被重构
      * 重构思路
-     *
+     * <p>
      * 1 计算屏幕的实际大小可以作为初始化的内容一开始就计算出来 以后直接使用
      * 2 计算maxD的方法
      * 3 计算目标亮度的方法
+     *
      * @param message
      */
     public void updateUI(final MeasurementStepMessage message) {
         Log.i(TAG, "updateUI(MeasurementStepMessage)");
 
         _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
+        //对应公式4-12
         float fontRatio = message.getDistToFace() / 29.7f;
-        _currentDistanceView.setTextSize(fontRatio * 20);
+        //参考字体大小
+        final int refFontSize = 20;
+        _currentDistanceView.setTextSize(fontRatio * refFontSize);
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
         //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
 
-        //dm: density(密度) * 标准dpi
-        //标准dpi = 160
-        double dm = metrics.density * 160;
+        //dm: density(显示屏的逻辑密度)
+        //参考dpi = 160
+        final int refDpi = 160;
+        double dm = metrics.density * refDpi;
+
         //利用勾股定理求得屏幕的对角线长度 单位Inch
         //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
         double x = Math.pow(metrics.widthPixels / dm, 2);
@@ -373,8 +380,11 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         if (lastDistToFace > 0) {
             String string;
             if (TextUtils.isEmpty(string = etEyeDistance.getText().toString().trim()) == false) {
+
                 float eyeDistance = Float.valueOf(string);
+                // 公式4-15?
                 angle = Math.atan(eyeDistance * Math.abs(message.getRealX() - lastRealX) / (message.getHalfEyeDist() * 2) / message.getDistToFace());
+
                 Log.d(TAG, "message.getRealX()= " + message.getRealX());
                 Log.d(TAG, "lastRealX= " + lastRealX);
                 Log.d(TAG, "eye distance(p)= " + message.getHalfEyeDist() * 2);
@@ -398,8 +408,9 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     /**
-     * 动态改变网页的背景和前景。bg和fg代表背景和前景色，可以是英文颜色名，也可以是rgb值（#RRGGBB）
+     * 改变网页的背景和前景。bg和fg代表背景和前景色，可以是英文颜色名，也可以是rgb值（#RRGGBB）
      * 未被使用
+     *
      * @param bg
      * @param fg
      */
@@ -410,8 +421,9 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     /**
-     * 动态改变网页的字体大小
+     * 改变网页的字体大小
      * 未被使用
+     *
      * @param fontsize
      */
     private void changeFontSize(int fontsize) {
@@ -461,9 +473,6 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         webView.loadUrl(js);
     }
 
-    /**
-     *
-     */
     private class MyOnclickListener implements View.OnClickListener {
 
         @Override
@@ -524,6 +533,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
                     break;
 
                 case R.id.brightness_ok:
+                    //亮度值调整
                     Log.i(TAG, "brightness_ok has been clicked.");
                     String brightnessString = brightness.getText().toString().trim();
                     if (TextUtils.isEmpty(brightnessString) == false) {
@@ -534,9 +544,10 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
                 case R.id.brightness_factor_ok:
                     Log.i(TAG, "brightness_factor_ok: has been clicked");
-                    String bFactorString = brightnessFactor.getText().toString().trim();
-                    if (TextUtils.isEmpty(bFactorString) == false) {
-                        bFactor = Integer.parseInt(bFactorString);
+                    //亮度因素调整
+                    String brightnessFactorString = brightnessFactor.getText().toString().trim();
+                    if (TextUtils.isEmpty(brightnessFactorString) == false) {
+                        bFactor = Integer.parseInt(brightnessFactorString);
                     }
                     break;
 
