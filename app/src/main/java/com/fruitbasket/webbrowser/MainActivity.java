@@ -373,38 +373,15 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
         return screenInch;
     }
+
     /**
-     * Update the UI params.
-     * 此方法需要被重构
-     * 重构思路
-     * 先拆解成多个方法 把以下任务分开
-     * <p>
-     * 1 计算屏幕的实际大小可以作为初始化的内容一开始就计算出来 以后直接使用
-     * 2 计算maxD的方法
-     * 3 计算目标亮度的方法
-     *
-     * @param message
+     * 2018/12/07
+     * 获取最佳亮度值 LP
+     * 论文公式 4-3
+     * @param message MeasurementStepMessage
+     * @return
      */
-    public void updateUI(final MeasurementStepMessage message) {
-        Log.i(TAG, "updateUI(MeasurementStepMessage)");
-
-        _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
-
-        _currentDistanceView.setTextSize(getIdealTextSize(message));
-        /*
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
-        //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
-
-        //dm: density(显示屏的逻辑密度)
-        //参考dpi = 160
-        final int refDpi = 160;
-        double dm = metrics.density * refDpi;
-
-        //利用勾股定理求得屏幕的对角线长度 单位Inch
-        //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
-        double x = Math.pow(metrics.widthPixels / dm, 2);
-        double y = Math.pow(metrics.heightPixels / dm, 2);*/
+    public double getOptimalBrightness(MeasurementStepMessage message){
 
         DisplayMetrics metrics = getDisplayMetrics();
         final double screenSizeInch = getScreenSizeInch();
@@ -423,7 +400,60 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         //计算最佳亮度 公式4-7
         double lP = lb + Math.pow((vDp / vD0), 2) * (l0 - lb);
 
-        //窗口屏幕亮度调整?
+        return lP;
+    }
+    /**
+     * Update the UI params.
+     * 此方法需要被重构
+     * 重构思路
+     * 先拆解成多个方法 把以下任务分开
+     * <p>
+     * 1 计算屏幕的实际大小可以作为初始化的内容一开始就计算出来 以后直接使用
+     * 2 计算maxD的方法
+     * 3 计算目标亮度的方法
+     *
+     * @param message
+     */
+    public void updateUI(final MeasurementStepMessage message) {
+        Log.i(TAG, "updateUI(MeasurementStepMessage)");
+
+        _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
+        //设置理想字体大小
+        _currentDistanceView.setTextSize(getIdealTextSize(message));
+        /*
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
+
+        //dm: density(显示屏的逻辑密度)
+        //参考dpi = 160
+        final int refDpi = 160;
+        double dm = metrics.density * refDpi;
+
+        //利用勾股定理求得屏幕的对角线长度 单位Inch
+        //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
+        double x = Math.pow(metrics.widthPixels / dm, 2);
+        double y = Math.pow(metrics.heightPixels / dm, 2);*/
+        /*
+        DisplayMetrics metrics = getDisplayMetrics();
+        final double screenSizeInch = getScreenSizeInch();
+        double heightPixel = metrics.heightPixels;
+        double widthPixel = metrics.widthPixels;
+
+        //论文公式4-3   vD0：对应论文中的MaxD
+        //疑问：widthPixel?? 与论文不对应
+        final double vD0 = screenSizeInch / (Math.sqrt(Math.pow((1.0 * widthPixel / heightPixel), 2) + 1) * widthPixel * Math.tan(1 / 60.0 * Math.PI / 180));
+        //获取的人脸到设备的距离
+        double vDp = message.getDistToFace();
+
+        //l0 目标亮度值
+        //l0 ??? 为什么等于lb+30
+        double l0 = lb + 30;
+        //计算最佳亮度 公式4-7
+        */
+
+        //屏幕亮度调整到最佳亮度
+        double lP = getOptimalBrightness(message);
         layoutParams.screenBrightness = (float) lP / 255 >= 1 ? 1 : (float) lP / 255;
         getWindow().setAttributes(layoutParams);
 
@@ -432,6 +462,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
          * 调整字体大小的代码部分
          * @param webView
          */
+
+        DisplayMetrics metrics = getDisplayMetrics();
         if (webView != null) {
             //根据距离经过计算设置字体大小
             //算法5-3 44页??
@@ -482,12 +514,17 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * 改变网页的背景和前景。bg和fg代表背景和前景色，可以是英文颜色名，也可以是rgb值（#RRGGBB）
      * 未被使用
      *
-     * @param bg
-     * @param fg
+     * @param bg background
+     * @param fg foreground
      */
     private void changeFgAndBg(String bg, String fg) {
         webView.getSettings().setJavaScriptEnabled(true);
-        String js = "javascript:" + "var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { color : " + fg + " !important;background: " + bg + "!important}';document.body.appendChild(sheet);";
+        String js = "javascript:" +
+                "var sheet = document.getElementsByTagName('style');"+
+                "if(sheet.length==0) sheet =document.createElement('style');"+
+                "else sheet = document.getElementsByTagName('style')[0];"+
+                "sheet.innerHTML='* { color : " + fg + " !important;background: " + bg + "!important}';"+
+                "document.body.appendChild(sheet);";
         webView.loadUrl(js);
     }
 
