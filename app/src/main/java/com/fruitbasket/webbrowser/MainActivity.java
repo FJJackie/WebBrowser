@@ -214,7 +214,10 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         Log.i(TAG, "onAccuracyChanged(Sensor,int)");
     }
 
-    private void initViews() {
+    /**
+     * 设置布局等界面参数
+     */
+    private void SetLayouts(){
         part1 = (RelativeLayout) findViewById(R.id.part1);
         part2 = (LinearLayout) findViewById(R.id.part2);
 
@@ -229,7 +232,12 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         _mySurfaceView.setLayoutParams(layout);
         _currentDistanceView = (TextView) findViewById(R.id.currentDistance);
         _calibrateButton = (Button) findViewById(R.id.calibrateButton);
+    }
 
+    /**
+     * 2018/12/06
+     */
+    private void FindViewsById(){
         View.OnClickListener listener = new MyOnclickListener();
 
         goTo = (Button) findViewById(R.id.go_to);
@@ -268,6 +276,14 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new JsObject(MainActivity.this), "injectedObject");
         webView.loadUrl("https://www.v2ex.com/t/350509#reply106");
+    }
+
+    //初始化布局和组件
+    private void initViews() {
+
+        SetLayouts();
+
+        FindViewsById();
     }
 
     /**
@@ -324,6 +340,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     /**
+     * 2018/12/06
      * 获得当前设备的一个DisplayMetrics对象
      * @return DisplayMetrics 对象
      */
@@ -337,7 +354,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * 2018/12/06
      * get the screen size
      * 获取屏幕对角线尺寸 单位 inch
-     * @return
+     * @return 屏幕对角线长度 单位 inch
      */
     public double getScreenSizeInch(){
         DisplayMetrics metrics = new DisplayMetrics();
@@ -411,9 +428,14 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         getWindow().setAttributes(layoutParams);
 
         //更改网页显示效果
+        /**
+         * 调整字体大小的代码部分
+         * @param webView
+         */
         if (webView != null) {
             //根据距离经过计算设置字体大小
-            //算法5-3 44页
+            //算法5-3 44页??
+            //公式不一致
             int fontsize = (int) (5.5 * message.getDistToFace() * metrics.densityDpi / (6000 * 2.54 * 0.45));
             if (fontsize > 0) {
                 //改变网页内容 字体大小和前后景反差颜色
@@ -590,7 +612,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
                     } else {
                     }
                     break;
-
+                    //设置亮度因素
                 case R.id.brightness_factor_ok:
                     Log.i(TAG, "brightness_factor_ok: has been clicked");
                     //亮度因素调整
