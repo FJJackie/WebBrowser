@@ -93,7 +93,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     private int lastRealX = 0;
 
     private final static DecimalFormat _decimalFormater = new DecimalFormat("0.0");
-
+    //像素密度参考值
+    final int refDpi = 160;
     //2018/12/06
     //参考字体大小
     final int refFontSize = 20;
@@ -310,6 +311,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     /**
+     * 2018/12/06
      * 获取理想的字体大小
      * @param message 传入message参数 获取人脸到屏幕的距离
      * @return 理想字体的大小
@@ -319,6 +321,40 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         float fontRatio = message.getDistToFace() / 29.7f;
         float idealTextSize = fontRatio*refFontSize;
         return idealTextSize;
+    }
+
+    /**
+     * 获得当前设备的一个DisplayMetrics对象
+     * @return DisplayMetrics 对象
+     */
+    public DisplayMetrics getDisplayMetrics(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+        return metrics;
+    }
+
+    /**
+     * 2018/12/06
+     * get the screen size
+     * 获取屏幕对角线尺寸 单位 inch
+     * @return
+     */
+    public double getScreenSizeInch(){
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+
+        //dm: density(显示屏的逻辑密度)
+        //参考dpi = 160
+        //final int refDpi = 160;
+        double dm = metrics.density * refDpi;
+        //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
+        //利用勾股定理求得屏幕的对角线长度 单位Inch
+        //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
+        double x = Math.pow(metrics.widthPixels / dm, 2);
+        double y = Math.pow(metrics.heightPixels / dm, 2);
+        final double screenInch = Math.sqrt(x + y);
+
+        return screenInch;
     }
     /**
      * Update the UI params.
@@ -338,7 +374,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
 
         _currentDistanceView.setTextSize(getIdealTextSize(message));
-
+        /*
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
         //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
@@ -351,15 +387,16 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         //利用勾股定理求得屏幕的对角线长度 单位Inch
         //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
         double x = Math.pow(metrics.widthPixels / dm, 2);
-        double y = Math.pow(metrics.heightPixels / dm, 2);
-        final double screenInch = Math.sqrt(x + y);
+        double y = Math.pow(metrics.heightPixels / dm, 2);*/
 
+        DisplayMetrics metrics = getDisplayMetrics();
+        final double screenSizeInch = getScreenSizeInch();
         double heightPixel = metrics.heightPixels;
         double widthPixel = metrics.widthPixels;
 
         //论文公式4-3   vD0：对应论文中的MaxD
         //疑问：widthPixel?? 与论文不对应
-        final double vD0 = screenInch / (Math.sqrt(Math.pow((1.0 * widthPixel / heightPixel), 2) + 1) * widthPixel * Math.tan(1 / 60.0 * Math.PI / 180));
+        final double vD0 = screenSizeInch / (Math.sqrt(Math.pow((1.0 * widthPixel / heightPixel), 2) + 1) * widthPixel * Math.tan(1 / 60.0 * Math.PI / 180));
         //获取的人脸到设备的距离
         double vDp = message.getDistToFace();
 
