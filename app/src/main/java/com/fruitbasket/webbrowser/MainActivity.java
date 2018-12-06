@@ -94,6 +94,9 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
     private final static DecimalFormat _decimalFormater = new DecimalFormat("0.0");
 
+    //2018/12/06
+    //参考字体大小
+    final int refFontSize = 20;
     @Override
     public void onStart() {
         super.onStart();
@@ -307,9 +310,21 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     /**
+     * 获取理想的字体大小
+     * @param message 传入message参数 获取人脸到屏幕的距离
+     * @return 理想字体的大小
+     */
+    public float getIdealTextSize(final MeasurementStepMessage message){
+        //对应公式4-12
+        float fontRatio = message.getDistToFace() / 29.7f;
+        float idealTextSize = fontRatio*refFontSize;
+        return idealTextSize;
+    }
+    /**
      * Update the UI params.
      * 此方法需要被重构
      * 重构思路
+     * 先拆解成多个方法 把以下任务分开
      * <p>
      * 1 计算屏幕的实际大小可以作为初始化的内容一开始就计算出来 以后直接使用
      * 2 计算maxD的方法
@@ -321,11 +336,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         Log.i(TAG, "updateUI(MeasurementStepMessage)");
 
         _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
-        //对应公式4-12
-        float fontRatio = message.getDistToFace() / 29.7f;
-        //参考字体大小
-        final int refFontSize = 20;
-        _currentDistanceView.setTextSize(fontRatio * refFontSize);
+
+        _currentDistanceView.setTextSize(getIdealTextSize(message));
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
