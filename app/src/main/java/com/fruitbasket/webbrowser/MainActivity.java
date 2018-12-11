@@ -320,6 +320,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         _mySurfaceView.showMiddleEye(on);
     }
 
+
     public void onShowEyePoints(final View view) {
         // Is the toggle on? 检查开关按钮是否开启
         boolean on = ((Switch) view).isChecked();
@@ -402,6 +403,13 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
         return lP;
     }
+
+    public int getOptimalFontSize(MeasurementStepMessage message){
+        DisplayMetrics metrics = getDisplayMetrics();
+        int fontSize = (int) (5.5 * message.getDistToFace() * metrics.densityDpi / (6000 * 2.54 * 0.45));
+        return fontSize;
+    }
+
     /**
      * Update the UI params.
      * 此方法需要被重构
@@ -460,25 +468,26 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         //更改网页显示效果
         /**
          * 调整字体大小的代码部分
-         * @param webView
+         * @param webView 判断webView是否为空
          */
-
-        DisplayMetrics metrics = getDisplayMetrics();
         if (webView != null) {
             //根据距离经过计算设置字体大小
             //算法5-3 44页??
             //公式不一致
-            int fontsize = (int) (5.5 * message.getDistToFace() * metrics.densityDpi / (6000 * 2.54 * 0.45));
-            if (fontsize > 0) {
+            int fontSize = getOptimalFontSize(message);
+            if (fontSize > 0) {
                 //改变网页内容 字体大小和前后景反差颜色
-                changeFontSizeAndContrast(fontsize);
-                Toast.makeText(MainActivity.this, "fontsize: " + fontsize, Toast.LENGTH_SHORT).show();
+                changeFontSizeAndContrast(fontSize);
+                //ui提示字体改变
+                Toast.makeText(MainActivity.this, "fontsize: " + fontSize, Toast.LENGTH_SHORT).show();
             }
         } else {
             Log.d(TAG, "webView is null");
         }
 
-        //计算角度
+        /**计算角度
+         *
+         */
         double angle = 0;
         if (lastDistToFace > 0) {
             String string;
