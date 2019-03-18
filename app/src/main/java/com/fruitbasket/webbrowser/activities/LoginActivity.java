@@ -1,4 +1,4 @@
-package com.fruitbasket.webbrowser;
+package com.fruitbasket.webbrowser.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,8 @@ import android.text.InputType;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.*;
+
+import com.fruitbasket.webbrowser.R;
 import com.fruitbasket.webbrowser.utils.Base64Utils;
 import com.fruitbasket.webbrowser.utils.BaseActivity;
 import com.fruitbasket.webbrowser.utils.SharedPreferencesUtils;
@@ -226,6 +228,7 @@ public class LoginActivity extends BaseActivity
                     loadCheckBoxState();//记录下当前用户记住密码和自动登录的状态;
 
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    //startActivity(new Intent(LoginActivity.this, CameraActivity.class));
                     finish();//关闭页面
                 } else {
                     showToast("输入的登录账号或密码不正确");

@@ -4,11 +4,6 @@ import android.app.Activity;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
-import com.fruitbasket.webbrowser.MainActivity;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-import static android.os.Build.VERSION_CODES.M;
-
 /**
  * Created by zzbpc on 2017/4/17.
  */

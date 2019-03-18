@@ -1,11 +1,9 @@
-package com.fruitbasket.webbrowser;
+package com.fruitbasket.webbrowser.activities;
 
 import java.text.DecimalFormat;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.graphics.PointF;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +11,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -29,13 +30,18 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fruitbasket.webbrowser.CameraSurfaceView;
+import com.fruitbasket.webbrowser.R;
 import com.fruitbasket.webbrowser.messages.MeasurementStepMessage;
 import com.fruitbasket.webbrowser.messages.MessageHUB;
 import com.fruitbasket.webbrowser.messages.MessageListener;
+import com.fruitbasket.webbrowser.utils.ActivityCollector;
+import com.fruitbasket.webbrowser.utils.BaseActivity;
 import com.fruitbasket.webbrowser.utils.JsObject;
+import com.fruitbasket.webbrowser.utils.LogUtil;
 
 
-public class MainActivity extends Activity implements MessageListener, SensorEventListener {
+public class MainActivity extends BaseActivity implements MessageListener, SensorEventListener {
     private static final String TAG = "MainActivity";
 
     public static final String CAM_SIZE_WIDTH = "intent_cam_size_width";
@@ -51,21 +57,29 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     //UI控件部分
     private CameraSurfaceView _mySurfaceView;
     Camera _cam;
-    TextView _currentDistanceView;
-    Button _calibrateButton;
-    private Button goTo;
-    private EditText url;
-    private EditText fontSize;
-    private Button fontSizeOk;
-    private EditText sizeFactor;
-    private Button sizeFactorOk;
-    private TextView sizeView;
-    private EditText brightness;
-    private Button brightnessOk;
-    private EditText brightnessFactor;
-    private Button brightnessFactorOk;
-    private TextView backgroundBrightness;
-    private TextView brightnessView;
+
+    TextView _currentDistanceView;  //当前距离
+    Button _calibrateButton;  //校准按钮
+
+    private Button goTo;  //去到按钮
+    private EditText url;  //url编辑栏
+
+    private EditText fontSize;  //字体大小
+    private Button fontSizeOk;  //字体大小确定
+
+    private EditText sizeFactor;  //尺寸大小
+    private Button sizeFactorOk;  //尺寸大小确定
+
+    private TextView sizeView;  //
+
+    private EditText brightness;  //亮度
+    private Button brightnessOk;  //亮度确定
+
+    private EditText brightnessFactor;  //亮度因子
+    private Button brightnessFactorOk;  //亮度因子确定
+
+    private TextView backgroundBrightness;  //背景亮度
+    private TextView brightnessView;  //背景视图
 
     private EditText etEyeDistance;
     private TextView tvAngle;
@@ -98,11 +112,6 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     //2018/12/06
     //参考字体大小
     final int refFontSize = 20;
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.i(TAG, "onStart()");
-    }
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
@@ -112,21 +121,48 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
         //加入权限动态申请方可正常启动 否则闪退
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.d(TAG, "onCreate: 权限控制");
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{ Manifest.permission. CAMERA }, 1);
+            }
+            /*
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
-            }
+            }*/
         }
 
         initViews();
         layoutParams = getWindow().getAttributes();
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+
+        /*查看手机传感器
+        List<Sensor> listSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        int i = 1;
+        for (Sensor sensor : listSensor) {
+            Log.d("sensor " + i, sensor.getName());
+            i++;
+        }*/
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i(TAG, "onStart()");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.i(TAG, "onResume()");
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+        //设置传感器监听频率
+        /*SENSOR_DELAY_FASTEST最灵敏，快的然你无语
+        SENSOR_DELAY_GAME游戏的时候用这个，不过一般用这个就够了
+        SENSOR_DELAY_NORMAL比较慢。
+        SENSOR_DELAY_UI最慢的*/
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+
         //注册事件监听器
         MessageHUB.get().registerListener(this);
 
@@ -195,6 +231,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
             case MessageHUB.DONE_CALIBRATION:
                 _calibrateButton.setBackgroundResource(R.drawable.green_button);
                 //part1.setVisibility(View.INVISIBLE);
+                part1.setVisibility(View.GONE);
+                //part2.setVisibility(View.GONE);
                 //part2.setVisibility(View.INVISIBLE);
                 break;
 
@@ -252,7 +290,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
         sizeFactorOk = (Button) findViewById(R.id.size_factor_ok);
         sizeFactorOk.setOnClickListener(listener);
 
-        sizeView = (TextView) findViewById(R.id.size_view);
+        //sizeView = (TextView) findViewById(R.id.size_view);
 
         brightness = (EditText) findViewById(R.id.brightness);
         brightnessOk = (Button) findViewById(R.id.brightness_ok);
@@ -280,9 +318,10 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
     //初始化布局和组件
     private void initViews() {
-
+        //part1初始化和获取控件
         SetLayouts();
 
+        //part2初始化和获取控件
         FindViewsById();
     }
 
@@ -301,6 +340,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @param v
      */
     public void pressedCalibrate(final View v) {
+        LogUtil.d(TAG, "pressedCalibrate is Clicked.");
         if (!_mySurfaceView.isCalibrated()) {
             _calibrateButton.setBackgroundResource(R.drawable.yellow_button);
             _mySurfaceView.calibrate();
@@ -308,6 +348,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     public void pressedReset(final View v) {
+        LogUtil.d(TAG, "pressedReset: is Clicked.");
         if (_mySurfaceView.isCalibrated()) {
             _calibrateButton.setBackgroundResource(R.drawable.red_button);
             _mySurfaceView.reset();
@@ -317,6 +358,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     public void onShowMiddlePoint(final View view) {
         // Is the toggle on?
         boolean on = ((Switch) view).isChecked();
+        LogUtil.d(TAG,"onShowMiddlePoint is Clicked. on = "+ on);
         _mySurfaceView.showMiddleEye(on);
     }
 
@@ -324,6 +366,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     public void onShowEyePoints(final View view) {
         // Is the toggle on? 检查开关按钮是否开启
         boolean on = ((Switch) view).isChecked();
+        LogUtil.d(TAG,"onShowEyePoints is Clicked. on = " + on);
         _mySurfaceView.showEyePoints(on);
     }
 
@@ -334,6 +377,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @return 理想字体的大小
      */
     public float getIdealTextSize(final MeasurementStepMessage message){
+        LogUtil.ObjectValue("getIdealTextSize", message);
+
         //对应公式4-12
         float fontRatio = message.getDistToFace() / 29.7f;
         float idealTextSize = fontRatio*refFontSize;
@@ -346,6 +391,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @return DisplayMetrics 对象
      */
     public DisplayMetrics getDisplayMetrics(){
+        LogUtil.d(TAG,"getDisplayMetrics()");
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
         return metrics;
@@ -358,6 +404,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @return 屏幕对角线长度 单位 inch
      */
     public double getScreenSizeInch(){
+        LogUtil.d(TAG,"getScreenSizeInch()");
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
 
@@ -383,6 +430,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @return
      */
     public double getOptimalBrightness(MeasurementStepMessage message){
+        LogUtil.ObjectValue(TAG+".getOptimalBrightness()",message);
 
         DisplayMetrics metrics = getDisplayMetrics();
         final double screenSizeInch = getScreenSizeInch();
@@ -405,6 +453,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     public int getOptimalFontSize(MeasurementStepMessage message){
+        LogUtil.ObjectValue(TAG+".getOptimalFontSize",message);
+
         DisplayMetrics metrics = getDisplayMetrics();
         int fontSize = (int) (5.5 * message.getDistToFace() * metrics.densityDpi / (6000 * 2.54 * 0.45));
         return fontSize;
@@ -423,7 +473,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @param message
      */
     public void updateUI(final MeasurementStepMessage message) {
-        Log.i(TAG, "updateUI(MeasurementStepMessage)");
+        LogUtil.ObjectValue(TAG+".updateUI", message);
 
         _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
         //设置理想字体大小
@@ -513,6 +563,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     }
 
     private void resetCam() {
+        LogUtil.d(TAG, "resetCam()");
         _mySurfaceView.reset();
         _cam.stopPreview();
         _cam.setPreviewCallback(null);
@@ -527,6 +578,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @param fg foreground
      */
     private void changeFgAndBg(String bg, String fg) {
+        Log.d(TAG, "changeFgAndBg(): bg=" + bg +",fg="+fg);
+
         webView.getSettings().setJavaScriptEnabled(true);
         String js = "javascript:" +
                 "var sheet = document.getElementsByTagName('style');"+
@@ -544,6 +597,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
      * @param fontsize
      */
     private void changeFontSize(int fontsize) {
+        Log.d(TAG, "changeFontSize(): fontsize= " + fontsize);
+
         webView.getSettings().setJavaScriptEnabled(true);
         String js = "javascript:(function(){ var css = '* { font-size : " + fontsize + "px !important ; }';var style = document.getElementsByTagName('style');if(style.length==0){style = document.createElement('style');}else{style = document.getElementsByTagName('style')[0];}        if (style.styleSheet){ style.style.styleSheet.cssText=css;}else{style.appendChild(document.createTextNode(css));} document.getElementsByTagName('head')[0].appendChild(style);})()";
         //String js ="javascript:"+"var sheet = document.getElementsByTagName('style');if(sheet.length==0) sheet =document.createElement('style');else sheet = document.getElementsByTagName('style')[0];sheet.innerHTML='* { font-size : "+fontsize+"px !important;}；document.body.appendChild(sheet)';document.body.appendChild(sheet);";
@@ -555,6 +610,8 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
     依据传入的字体大小改变网页前景和背景颜色
      */
     private void changeFontSizeAndContrast(int fontsize) {
+        LogUtil.d(TAG, "changeFontSizeAndContrast(): fontsize= " + fontsize);
+
         //公式4-19 由字体换算出对比度阈值
         String js = "javascript:(function(){  var contrast = -0.0425*" + fontsize + "+0.85; " +
                 "    var body = document.getElementsByTagName('body')[0]; " +
@@ -597,8 +654,10 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
             switch (view.getId()) {
                 //访问网页
                 case R.id.go_to:
-                    Log.i(TAG, "Button go to has been clicked");
+                    LogUtil.i(TAG, "Button go to has been clicked");
                     String urlString = url.getText().toString().trim();
+                    LogUtil.i(TAG,urlString);
+                    LogUtil.d(TAG, "onClick: webView = null?"+ (webView == null));
                     if (webView != null) {
                         if (TextUtils.isEmpty(urlString) == false) {
                             webView.loadUrl(urlString);
@@ -627,7 +686,7 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
                     break;
                 //设置字体
                 case R.id.font_size_ok:
-                    Log.i(TAG, "Button fontSizeOk has been clicked");
+                    LogUtil.i(TAG, "Button fontSizeOk has been clicked");
 
                     String fontSizeString = fontSize.getText().toString().trim();
                     if (fontSizeString != null
@@ -636,12 +695,12 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
                         WebSettings settings = webView.getSettings();
                         settings.setTextZoom(Integer.parseInt(fontSizeString));
                     } else {
-                        Log.e(TAG, "zoom error");
+                        LogUtil.e(TAG, "zoom error");
                     }
                     break;
 
                 case R.id.size_factor_ok:
-                    Log.i(TAG, "size_factor_ok has been clicked");
+                    LogUtil.i(TAG, "size_factor_ok has been clicked");
                     String sizeFactorString = sizeFactor.getText().toString().trim();
                     if (sizeFactorString != null
                             && TextUtils.isEmpty(sizeFactorString) == false) {
@@ -651,16 +710,16 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
                 case R.id.brightness_ok:
                     //亮度值调整
-                    Log.i(TAG, "brightness_ok has been clicked.");
+                    LogUtil.i(TAG, "brightness_ok has been clicked.");
                     String brightnessString = brightness.getText().toString().trim();
                     if (TextUtils.isEmpty(brightnessString) == false) {
                         setBrightness(Float.parseFloat(brightnessString));
                     } else {
                     }
                     break;
-                    //设置亮度因素
+                //设置亮度因素
                 case R.id.brightness_factor_ok:
-                    Log.i(TAG, "brightness_factor_ok: has been clicked");
+                    LogUtil.i(TAG, "brightness_factor_ok: has been clicked");
                     //亮度因素调整
                     String brightnessFactorString = brightnessFactor.getText().toString().trim();
                     if (TextUtils.isEmpty(brightnessFactorString) == false) {
@@ -689,6 +748,20 @@ public class MainActivity extends Activity implements MessageListener, SensorEve
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 1:
+                if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    LogUtil.d(TAG, "onRequestPermissionsResult: 权限不足");
+                    ActivityCollector.finishAll();
+                }
+                break;
+            default:
         }
     }
 }

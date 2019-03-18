@@ -23,6 +23,7 @@ import android.view.SurfaceView;
 import com.fruitbasket.webbrowser.measurement.Point;
 import com.fruitbasket.webbrowser.messages.MeasurementStepMessage;
 import com.fruitbasket.webbrowser.messages.MessageHUB;
+import com.fruitbasket.webbrowser.utils.LogUtil;
 import com.fruitbasket.webbrowser.utils.Util;
 
 public class CameraSurfaceView extends SurfaceView implements Callback,
@@ -268,6 +269,7 @@ public class CameraSurfaceView extends SurfaceView implements Callback,
 
     @Override
     public void onPreviewFrame(final byte[] data, final Camera camera) {
+        LogUtil.d(TAG, "onPreviewFrame: ");
         if (_calibrationsLeft == -1)
             return;
 

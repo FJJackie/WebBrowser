@@ -19,6 +19,7 @@
             android:paddingTop="@dimen/activity_vertical_margin"
             tools:context=".MainActivity" >
 
+            <!--摄像头预览控件-->
             <!-- Height + width will be set in the main activity -->
             <com.fruitbasket.webbrowser.CameraSurfaceView
                 android:id="@+id/surface_camera"
@@ -88,9 +89,11 @@
         <LinearLayout
             android:id="@+id/part2"
             android:layout_width="match_parent"
+            android:background="#a0000000"
             android:layout_height="match_parent"
             android:layout_marginTop="30dp"
             android:orientation="vertical">
+            <!--URL跳转部分-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -102,90 +105,142 @@
                     android:text="@string/go_to"/>
                 <EditText
                     android:id="@+id/url"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content" />
             </LinearLayout>
+
 
             <!--以下是参数调节控件-->
+            <!--第1行控件-->
             <LinearLayout
+                android:id="@+id/widget_first_row"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/font_size"/>
-                <EditText
-                    android:id="@+id/font_size"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <Button
-                    android:id="@+id/font_size_ok"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/ok"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
-                    android:text="@string/size_factor"/>
-                <EditText
-                    android:id="@+id/size_factor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <Button
-                    android:id="@+id/size_factor_ok"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/ok"/>
-
-                <TextView
-                    android:id="@+id/size_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_height="wrap_content">
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <TextView
+                    android:id="@+id/widget_first_row0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/font_size"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            />
+                        <EditText
+                            android:id="@+id/font_size"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/font_size_ok"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
-                        android:text="@string/brightness"/>
-                    <EditText
-                        android:id="@+id/brightness"
+                        android:text="@string/ok"
+                        />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/widget_first_row1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/size_factor"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            />
+                        <EditText
+                            android:id="@+id/size_factor"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+                    <Button
+                        android:id="@+id/size_factor_ok"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:text="@string/ok"
+                        />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--第2行控件-->
+            <LinearLayout
+                android:id="@+id/widget_second_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:id="@+id/widget_second_row0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/brightness"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            />
+                        <EditText
+                            android:id="@+id/brightness"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
                     <Button
                         android:id="@+id/brightness_ok"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/ok"/>
+                        android:text="@string/ok"
+                        />
+                </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
-                        android:text="@string/brightness_factor"/>
-                    <EditText
-                        android:id="@+id/brightness_factor"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:id="@+id/widget_second_row1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="@string/brightness_factor"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            />
+                        <EditText
+                            android:id="@+id/brightness_factor"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
                     <Button
                         android:id="@+id/brightness_factor_ok"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/ok"/>
+                        android:text="@string/ok"
+                        />
                 </LinearLayout>
+            </LinearLayout>
 
+            <!--显示控件-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -200,7 +255,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="10dp"/>
                 </LinearLayout>
-<!--以上是参数调节控件-->
+                <!--以上是参数调节控件-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -213,8 +268,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="10"/>
-
-
                 </LinearLayout>
 
                 <HorizontalScrollView
@@ -242,11 +295,10 @@
                             android:layout_marginLeft="10dp" />
                     </LinearLayout>
                 </HorizontalScrollView>
-
             </LinearLayout>
-            </LinearLayout>
+        </LinearLayout>
 
-<!--网页视图在这-->
+        <!--网页视图在这-->
         <WebView
             android:id="@+id/web_view"
             android:layout_width="match_parent"

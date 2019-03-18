@@ -1,9 +1,14 @@
 package com.fruitbasket.webbrowser.messages;
 
+import android.util.Log;
+
+import com.fruitbasket.webbrowser.utils.LogUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageHUB {
+	public static final String TAG = "MessageHUB";
 
 	public static final int MEDIA_BUTTON_CLICKED = 0;
 
@@ -34,6 +39,8 @@ public class MessageHUB {
 	}
 
 	public void sendMessage(final int messageID, final Object message) {
+		Log.d(TAG, "sendMessage: messageID = "+ message);
+		LogUtil.ObjectValue(TAG,message);
 		for (MessageListener ml : _listenerList) {
 			ml.onMessage(messageID, message);
 		}

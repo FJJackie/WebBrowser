@@ -1,17 +1,14 @@
-package com.fruitbasket.webbrowser;
+package com.fruitbasket.webbrowser.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.fruitbasket.webbrowser.R;
 import com.fruitbasket.webbrowser.utils.BaseActivity;
-import com.fruitbasket.webbrowser.utils.SharedPreferencesUtils;
 
 /**
  * 注册活动
