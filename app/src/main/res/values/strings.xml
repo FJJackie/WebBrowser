@@ -18,6 +18,9 @@
 
     <string name="account">account</string>
     <string name="password">password</string>
+    <string name="register_num">register_num</string>
+    <string name="register_password">register_password</string>
+    <string name="register_validate">register_validate</string>
     <string name="check_password">check_password</string>
     <string name="check_login">check_login</string>
     <string name="login">login</string>

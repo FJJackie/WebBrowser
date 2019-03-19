@@ -270,8 +270,10 @@ public class CameraSurfaceView extends SurfaceView implements Callback,
     @Override
     public void onPreviewFrame(final byte[] data, final Camera camera) {
         LogUtil.d(TAG, "onPreviewFrame: ");
-        if (_calibrationsLeft == -1)
+        if (_calibrationsLeft == -1){
             return;
+        }
+
 
         if (_calibrationsLeft > 0) {
             // Doing calibration !
@@ -287,6 +289,7 @@ public class CameraSurfaceView extends SurfaceView implements Callback,
                     - _lastFrameStart;
             _lastFrameStart = System.currentTimeMillis();
 
+            LogUtil.d(TAG,"onPreviewFrame:_calibrationsLeft = " + _calibrationsLeft );
             if (_currentFaceDetectionThread != null) {
                 _calibrationsLeft--;
                 updateMeasurement(_currentFaceDetectionThread.getCurrentFace());

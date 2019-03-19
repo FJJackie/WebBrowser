@@ -48,7 +48,7 @@
     <color name="color_back">#207579</color>
     <color name="color_backnor">#7fdcd9</color>
     <color name="color_dialog">#33B5E5</color>
-    <color name="color_login_bg">#7adfb8</color>
+    <color name="color_login_bg">#303F9F</color>
 
     <!--******  floating Action Button *********-->
     <color name="black_semi_transparent">#B2000000</color>

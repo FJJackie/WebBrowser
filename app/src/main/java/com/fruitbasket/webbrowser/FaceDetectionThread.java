@@ -56,7 +56,6 @@ public class FaceDetectionThread extends Thread {
                 _previewSize.height), 100, baos)) {
 
             Log.e("Camera", "compressToJpeg failed");
-
         }
 
         Log.i("Timing", "Compression finished: "

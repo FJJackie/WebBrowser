@@ -66,7 +66,7 @@
                     android:layout_width="80dip"
                     android:layout_height="80dip"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/register1" />
+                    android:src="@drawable/logo" />
         </LinearLayout>
 
         <!--账号密码输入框-->
@@ -107,7 +107,7 @@
                             android:layout_marginLeft="@dimen/margin_normal"
                             android:layout_toRightOf="@+id/img_account"
                             android:background="@null"
-                            android:hint="@string/account"
+                            android:hint="@string/register_num"
                             android:maxLines="1"
                             android:textColor="#515151"
                             android:textColorHint="#cdcdcd"
@@ -148,7 +148,7 @@
                             android:layout_marginLeft="@dimen/margin_normal"
                             android:layout_toRightOf="@+id/img_pw"
                             android:background="@null"
-                            android:hint="@string/password"
+                            android:hint="@string/register_password"
                             android:inputType="textPassword"
                             android:maxLines="1"
                             android:textColor="#515151"
@@ -165,6 +165,76 @@
                             />
                 </RelativeLayout>
         </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+                <!--验证码输入框-->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/radius_drawable_bg"
+                    android:paddingTop="2dip"
+                    android:paddingLeft="15dip"
+                    android:paddingBottom="12dip"
+                    android:layout_marginTop="5dip"
+                    android:layout_marginLeft="25dip"
+                    android:layout_marginRight="10dip">
+
+                        <!--验证码输入框-->
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:paddingBottom="5dip"
+                            android:layout_height="@dimen/item_height_normal"
+                            android:layout_marginLeft="@dimen/line_litter_height"
+                            android:layout_marginRight="@dimen/line_litter_height">
+
+                                <ImageView
+                                    android:id="@+id/img_validate"
+                                    android:layout_width="@dimen/dp_18"
+                                    android:layout_height="@dimen/dp_20"
+                                    android:layout_alignParentBottom="true"
+                                    android:layout_marginLeft="@dimen/margin_tiny"
+                                    android:scaleType="fitXY"
+                                    android:src="@drawable/icon_validate"/>
+
+
+                                <EditText
+                                    android:id="@+id/et_validate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentBottom="true"
+                                    android:layout_gravity="center"
+                                    android:layout_marginBottom="@dimen/margin_tiny"
+                                    android:layout_marginLeft="@dimen/margin_normal"
+                                    android:layout_toRightOf="@+id/img_validate"
+                                    android:background="@null"
+                                    android:hint="@string/register_validate"
+                                    android:maxLines="1"
+                                    android:textColor="#515151"
+                                    android:textColorHint="#cdcdcd"
+                                    android:textSize="@dimen/text_size_normal"/>
+                        </RelativeLayout>
+                </LinearLayout>
+
+
+                <Button
+                    android:id="@+id/get_validate_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dip"
+                    android:layout_marginRight="25dip"
+                    android:background="@drawable/button_bg"
+                    android:textColor="@android:color/white"
+                    android:text="获取验证码"
+                    android:scaleType="fitXY"
+                    />
+        </LinearLayout>
+
+
 
         <Button
             android:id="@+id/btn_register"
