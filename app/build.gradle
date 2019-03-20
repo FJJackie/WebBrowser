@@ -17,7 +17,11 @@ android {
         }
     }
 }
-
+repositories{
+    flatDir{
+        dirs 'libs'
+    }
+}
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
@@ -28,6 +32,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.google.android.gms:play-services-appindexing:8.4.0'
     implementation files('libs/sun.misc.BASE64Decoder.jar')
+
+    implementation files('libs/MobCommons-2016.0714.1402.jar')
+    implementation files('libs/MobTools-2016.0714.1402.jar')
+    implementation name:'SMSSDK-2.1.1',ext:'aar'
+    implementation name:'SMSSDKGUI-2.1.1',ext:'aar'
 }
 
 allprojects {

@@ -15,7 +15,7 @@
                     android:layout_weight="1"
                     android:gravity="left">
                         <ImageView
-                            android:id="@+id/back_login"
+                            android:id="@+id/btn_back_login"
                             android:layout_width="@dimen/dp_22"
                             android:layout_height="@dimen/dp_22"
                             android:layout_marginTop="@dimen/dp_7"
@@ -80,7 +80,7 @@
             android:layout_marginLeft="25dip"
             android:layout_marginRight="25dip">
 
-                <!--账号输入框-->
+                <!--手机号输入框-->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/item_height_normal"
@@ -88,24 +88,25 @@
                     android:layout_marginRight="@dimen/line_litter_height">
 
                         <ImageView
-                            android:id="@+id/img_account"
+                            android:id="@+id/img_register_phonenum"
                             android:layout_width="@dimen/dp_19"
                             android:layout_height="@dimen/dp_20"
                             android:layout_alignParentBottom="true"
                             android:layout_marginBottom="@dimen/margin_tiny"
                             android:layout_marginLeft="@dimen/margin_tiny"
                             android:scaleType="fitXY"
-                            android:src="@drawable/icon_login_account"/>
+                            android:src="@drawable/icon_account"/>
 
                         <EditText
-                            android:id="@+id/et_account"
+                            android:inputType="phone"
+                            android:id="@+id/et_phonenum"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_alignParentBottom="true"
                             android:layout_gravity="center"
                             android:layout_marginBottom="@dimen/margin_tiny"
                             android:layout_marginLeft="@dimen/margin_normal"
-                            android:layout_toRightOf="@+id/img_account"
+                            android:layout_toRightOf="@+id/img_register_phonenum"
                             android:background="@null"
                             android:hint="@string/register_num"
                             android:maxLines="1"
@@ -129,14 +130,14 @@
                     android:layout_marginRight="@dimen/line_litter_height">
 
                         <ImageView
-                            android:id="@+id/img_pw"
+                            android:id="@+id/img_register_pw"
                             android:layout_width="@dimen/dp_18"
                             android:layout_height="@dimen/dp_20"
                             android:layout_alignParentBottom="true"
                             android:layout_marginBottom="@dimen/margin_tiny"
                             android:layout_marginLeft="@dimen/margin_tiny"
                             android:scaleType="fitXY"
-                            android:src="@drawable/icon_login_pw"/>
+                            android:src="@drawable/icon_pw"/>
 
                         <EditText
                             android:id="@+id/et_password"
@@ -146,7 +147,7 @@
                             android:layout_gravity="center"
                             android:layout_marginBottom="@dimen/margin_tiny"
                             android:layout_marginLeft="@dimen/margin_normal"
-                            android:layout_toRightOf="@+id/img_pw"
+                            android:layout_toRightOf="@+id/img_register_pw"
                             android:background="@null"
                             android:hint="@string/register_password"
                             android:inputType="textPassword"
@@ -222,14 +223,14 @@
 
 
                 <Button
-                    android:id="@+id/get_validate_button"
+                    android:id="@+id/btn_get_validate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dip"
                     android:layout_marginRight="25dip"
                     android:background="@drawable/button_bg"
                     android:textColor="@android:color/white"
-                    android:text="获取验证码"
+                    android:text="@string/get_validate"
                     android:scaleType="fitXY"
                     />
         </LinearLayout>
