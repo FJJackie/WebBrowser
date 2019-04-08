@@ -1,9 +1,13 @@
 package com.fruitbasket.webbrowser.activities;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -11,20 +15,30 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -35,13 +49,16 @@ import com.fruitbasket.webbrowser.R;
 import com.fruitbasket.webbrowser.messages.MeasurementStepMessage;
 import com.fruitbasket.webbrowser.messages.MessageHUB;
 import com.fruitbasket.webbrowser.messages.MessageListener;
+import com.fruitbasket.webbrowser.slider_widget.Item;
+import com.fruitbasket.webbrowser.slider_widget.MyAdapter;
 import com.fruitbasket.webbrowser.utils.ActivityCollector;
 import com.fruitbasket.webbrowser.utils.BaseActivity;
 import com.fruitbasket.webbrowser.utils.JsObject;
 import com.fruitbasket.webbrowser.utils.LogUtil;
 
 
-public class MainActivity extends BaseActivity implements MessageListener, SensorEventListener {
+public class MainActivity extends BaseActivity implements MessageListener, SensorEventListener,
+        AdapterView.OnItemClickListener{
     private static final String TAG = "MainActivity";
 
     public static final String CAM_SIZE_WIDTH = "intent_cam_size_width";
@@ -51,10 +68,13 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     private static final int BRIGHTNESS_FACTOR_DEFAULT = 1;
     private static final int FONT_SIZE_FACTOR_DEFAULT = 1;
 
-    private RelativeLayout part1;
+    private HorizontalScrollView part0;
+    private LinearLayout part1;
     private LinearLayout part2;
 
+
     //UI控件部分
+    // 相机预览控件
     private CameraSurfaceView _mySurfaceView;
     Camera _cam;
 
@@ -91,6 +111,8 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     private SensorManager sensorManager;
     private Sensor sensor;
     private double lb;
+
+    //WindowManager.LayoutParams用于向WindowManager描述Window的管理策略
     private WindowManager.LayoutParams layoutParams;
     private int count = 0;
 
@@ -107,42 +129,39 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     private int lastRealX = 0;
 
     private final static DecimalFormat _decimalFormater = new DecimalFormat("0.0");
-    //像素密度参考值
+    //像素密度参考值，每英寸包含160个像素点
     final int refDpi = 160;
     //2018/12/06
     //参考字体大小
     final int refFontSize = 20;
 
+
+    //************************************************************************8
+    private DrawerLayout drawer_layout;
+    private ListView list_drawer;
+    private ArrayList<Item> menuLists;
+    private MyAdapter<Item> myAdapter = null;
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate(Bundle)");
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreat(Bundle)");
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
+        //修改状态栏颜色
+        translucentStatusBar();
         setContentView(R.layout.activity_main);
+        initViews();
 
         //加入权限动态申请方可正常启动 否则闪退
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Log.d(TAG, "onCreate: 权限控制");
-            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{ Manifest.permission. CAMERA }, 1);
-            }
-            /*
-            if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, 1);
-            }*/
-        }
+        permissionsCtrl();
 
-        initViews();
+        //layoutParams用于向WindowManager描述Window的管理策略
         layoutParams = getWindow().getAttributes();
+        //获取手机传感器管理器
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-
-        /*查看手机传感器
-        List<Sensor> listSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        int i = 1;
-        for (Sensor sensor : listSensor) {
-            Log.d("sensor " + i, sensor.getName());
-            i++;
-        }*/
+        //查看手机传感器
+        //listSensor();
     }
 
     @Override
@@ -156,17 +175,21 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         super.onResume();
         Log.i(TAG, "onResume()");
 
-        //设置传感器监听频率
-        /*SENSOR_DELAY_FASTEST最灵敏，快的然你无语
-        SENSOR_DELAY_GAME游戏的时候用这个，不过一般用这个就够了
-        SENSOR_DELAY_NORMAL比较慢。
-        SENSOR_DELAY_UI最慢的*/
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+        //SENSOR_DELAY_FASTEST 最灵敏
+        //SENSOR_DELAY_GAME 游戏的时候用这个
+        //SENSOR_DELAY_NORMAL 比较慢
+        //SENSOR_DELAY_UI 最慢的
 
-        //注册事件监听器
+        // 注册传感器监听器
+        // 第一个参数是Listener，第二个参数是所得传感器类型，第三个参数值获取传感器信息的频率
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+        // 注册事件监听器
         MessageHUB.get().registerListener(this);
 
+        // 打开摄像头，0-后置主摄像头，1-前置主摄像头
         _cam = Camera.open(1);
+        // 获取相机设置参数类
         Camera.Parameters param = _cam.getParameters();
 
         /*
@@ -196,6 +219,8 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         Log.d("PInfo", _cameraWidth + " x " + _cameraHeight);
 
         param.setPreviewSize(_cameraWidth, _cameraHeight);*/
+
+        //设置相机参数
         _cam.setParameters(param);
         _mySurfaceView.setCamera(_cam);
     }
@@ -231,8 +256,9 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
             case MessageHUB.DONE_CALIBRATION:
                 _calibrateButton.setBackgroundResource(R.drawable.green_button);
                 //part1.setVisibility(View.INVISIBLE);
+                part0.setVisibility(View.VISIBLE);
                 part1.setVisibility(View.GONE);
-                //part2.setVisibility(View.GONE);
+                part2.setVisibility(View.VISIBLE);
                 //part2.setVisibility(View.INVISIBLE);
                 break;
 
@@ -256,16 +282,19 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
      * 设置布局等界面参数
      */
     private void SetLayouts(){
-        part1 = (RelativeLayout) findViewById(R.id.part1);
+        part0 = (HorizontalScrollView) findViewById(R.id.part0);
+        part1 = (LinearLayout) findViewById(R.id.part1);
         part2 = (LinearLayout) findViewById(R.id.part2);
 
         _mySurfaceView = (CameraSurfaceView) findViewById(R.id.surface_camera);
+        //设置相机预览窗口宽高
         RelativeLayout.LayoutParams layout = new RelativeLayout.LayoutParams(
-                (int) (0.95 * this.getResources().getDisplayMetrics().widthPixels),
-                (int) (0.6 * this.getResources().getDisplayMetrics().heightPixels));
+                (int) (1.00 * this.getResources().getDisplayMetrics().widthPixels),
+                (int) (0.8 * this.getResources().getDisplayMetrics().heightPixels));
 
-        layout.setMargins(0, (int) (0.05 * this.getResources()
-                .getDisplayMetrics().heightPixels), 0, 0);
+        // 设置相机预览页面和外部控件的距离
+        layout.setMargins(0, 0, 0, (int) (0.01 * this.getResources()
+                .getDisplayMetrics().heightPixels));
 
         _mySurfaceView.setLayoutParams(layout);
         _currentDistanceView = (TextView) findViewById(R.id.currentDistance);
@@ -277,28 +306,12 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
      */
     private void FindViewsById(){
         View.OnClickListener listener = new MyOnclickListener();
-
         goTo = (Button) findViewById(R.id.go_to);
         goTo.setOnClickListener(listener);
         url = (EditText) findViewById(R.id.url);
 
-        fontSize = (EditText) findViewById(R.id.font_size);
-        fontSizeOk = (Button) findViewById(R.id.font_size_ok);
-        fontSizeOk.setOnClickListener(listener);
-
-        sizeFactor = (EditText) findViewById(R.id.size_factor);
-        sizeFactorOk = (Button) findViewById(R.id.size_factor_ok);
-        sizeFactorOk.setOnClickListener(listener);
 
         //sizeView = (TextView) findViewById(R.id.size_view);
-
-        brightness = (EditText) findViewById(R.id.brightness);
-        brightnessOk = (Button) findViewById(R.id.brightness_ok);
-        brightnessOk.setOnClickListener(listener);
-        //亮度因素
-        brightnessFactor = (EditText) findViewById(R.id.brightness_factor);
-        brightnessFactorOk = (Button) findViewById(R.id.brightness_ok);
-        brightnessFactorOk.setOnClickListener(listener);
 
         backgroundBrightness = (TextView) findViewById(R.id.background_brightness);
         brightnessView = (TextView) findViewById(R.id.brightness_view);
@@ -314,10 +327,21 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new JsObject(MainActivity.this), "injectedObject");
         webView.loadUrl("https://www.v2ex.com/t/350509#reply106");
+
+
+        //mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        //NavigationView navView = (NavigationView)findViewById(R.id.nav_view);
     }
 
     //初始化布局和组件
     private void initViews() {
+        //使用ToolBar控件替代ActionBar控件
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        //设置滑动菜单
+        setDrawerLayout();
+
         //part1初始化和获取控件
         SetLayouts();
 
@@ -355,6 +379,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         }
     }
 
+    //开启中眼点
     public void onShowMiddlePoint(final View view) {
         // Is the toggle on?
         boolean on = ((Switch) view).isChecked();
@@ -362,7 +387,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         _mySurfaceView.showMiddleEye(on);
     }
 
-
+    //开启眼球点
     public void onShowEyePoints(final View view) {
         // Is the toggle on? 检查开关按钮是否开启
         boolean on = ((Switch) view).isChecked();
@@ -381,7 +406,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
 
         //对应公式4-12
         float fontRatio = message.getDistToFace() / 29.7f;
-        float idealTextSize = fontRatio*refFontSize;
+        float idealTextSize = fontRatio * refFontSize;
         return idealTextSize;
     }
 
@@ -409,11 +434,12 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
 
         //dm: density(显示屏的逻辑密度)
-        //参考dpi = 160
+        //参考dpi = 160  dpi(dot per inch):屏幕像素密度，每英寸多少像素
         //final int refDpi = 160;
         double dm = metrics.density * refDpi;
         //接下来的代码是获得屏幕尺寸后计算屏幕的实际大小
         //利用勾股定理求得屏幕的对角线长度 单位Inch
+        //metrics.widthPixels：宽度上像素点个数
         //y = metrics.widthPixels/dm = 屏幕的物理宽度 下面的y同理
         double x = Math.pow(metrics.widthPixels / dm, 2);
         double y = Math.pow(metrics.heightPixels / dm, 2);
@@ -475,7 +501,8 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     public void updateUI(final MeasurementStepMessage message) {
         LogUtil.ObjectValue(TAG+".updateUI", message);
 
-        _currentDistanceView.setText(_decimalFormater.format(message.getDistToFace()) + " cm");
+        _currentDistanceView.setText("当前距离:" + _decimalFormater.format(message.getDistToFace()) + " cm");
+        _currentDistanceView.setTextColor(Color.rgb(0, 0, 0));
         //设置理想字体大小
         _currentDistanceView.setTextSize(getIdealTextSize(message));
         /*
@@ -647,6 +674,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         webView.loadUrl(js);
     }
 
+    //按钮点击监听类：搜索框  字体大小、尺寸因子、亮度、亮度因子设置按钮响应
     private class MyOnclickListener implements View.OnClickListener {
 
         @Override
@@ -684,49 +712,6 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
                         Log.e(TAG, "Go ot error");
                     }
                     break;
-                //设置字体
-                case R.id.font_size_ok:
-                    LogUtil.i(TAG, "Button fontSizeOk has been clicked");
-
-                    String fontSizeString = fontSize.getText().toString().trim();
-                    if (fontSizeString != null
-                            && TextUtils.isEmpty(fontSizeString) == false
-                            && webView != null) {
-                        WebSettings settings = webView.getSettings();
-                        settings.setTextZoom(Integer.parseInt(fontSizeString));
-                    } else {
-                        LogUtil.e(TAG, "zoom error");
-                    }
-                    break;
-
-                case R.id.size_factor_ok:
-                    LogUtil.i(TAG, "size_factor_ok has been clicked");
-                    String sizeFactorString = sizeFactor.getText().toString().trim();
-                    if (sizeFactorString != null
-                            && TextUtils.isEmpty(sizeFactorString) == false) {
-                        fontSizeFactor = Integer.parseInt(sizeFactorString);
-                    }
-                    break;
-
-                case R.id.brightness_ok:
-                    //亮度值调整
-                    LogUtil.i(TAG, "brightness_ok has been clicked.");
-                    String brightnessString = brightness.getText().toString().trim();
-                    if (TextUtils.isEmpty(brightnessString) == false) {
-                        setBrightness(Float.parseFloat(brightnessString));
-                    } else {
-                    }
-                    break;
-                //设置亮度因素
-                case R.id.brightness_factor_ok:
-                    LogUtil.i(TAG, "brightness_factor_ok: has been clicked");
-                    //亮度因素调整
-                    String brightnessFactorString = brightnessFactor.getText().toString().trim();
-                    if (TextUtils.isEmpty(brightnessFactorString) == false) {
-                        bFactor = Integer.parseInt(brightnessFactorString);
-                    }
-                    break;
-
                 default:
 
             }
@@ -735,6 +720,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
 
     private class MySensorEventListener implements SensorEventListener {
 
+        //当传感器的值发生变化时，调用OnSensorChanged().
         @Override
         public void onSensorChanged(SensorEvent sensorEvent) {
             float[] values = sensorEvent.values;
@@ -746,10 +732,42 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
             }
         }
 
+        //当传感器的精度发生变化时会调用OnAccuracyChanged()方法
         @Override
         public void onAccuracyChanged(Sensor sensor, int i) {
         }
 
+    }
+
+//**************************************************************************************************************
+
+    //加载toolbar.xml菜单文件
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar, menu);
+        return true;
+    }
+
+    //实现5.0以上状态栏透明(默认状态是半透明)
+    private void translucentStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+            //int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+            //decorView.setSystemUiVisibility(option);
+            getWindow().setStatusBarColor(ContextCompat.
+                    getColor(getApplicationContext(), R.color.colorPrimary)
+            );
+        }
+    }
+
+    //权限控制
+    private void permissionsCtrl(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.d(TAG, "onCreate: 权限控制");
+            if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{ Manifest.permission. CAMERA }, 1);
+            }
+        }
     }
 
     @Override
@@ -763,5 +781,106 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
                 break;
             default:
         }
+    }
+
+    // 查看手机传感器
+    private void listSensor(){
+        List<Sensor> listSensor = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        int i = 1;
+        for (Sensor sensor : listSensor) {
+            Log.d("sensor " + i, sensor.getName());
+            i++;
+        }
+    }
+
+    //处理toolbar上各个按钮的点击事件
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settings:
+                drawer_layout.openDrawer(GravityCompat.END);
+                break;
+            default:
+        }
+        return true;
+    }
+
+    private void setDrawerLayout(){
+        drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        list_drawer = (ListView) findViewById(R.id.list_drawer);
+        menuLists = new ArrayList<Item>();
+        menuLists.add(new Item(R.mipmap.iv_menu_fontsize,"字体大小"));
+        menuLists.add(new Item(R.mipmap.iv_menu_size,"尺寸因子"));
+        menuLists.add(new Item(R.mipmap.iv_menu_brightness,"亮        度"));
+        menuLists.add(new Item(R.mipmap.iv_menu_brightness_factor,"亮度因子"));
+        myAdapter = new MyAdapter<Item>(menuLists,R.layout.item_list) {
+            @Override
+            public void bindView(ViewHolder holder, Item obj) {
+                holder.setImageResource(R.id.img_icon,obj.getIconId());
+                holder.setText(R.id.txt_content, obj.getIconName());
+            }
+        };
+        list_drawer.setAdapter(myAdapter);
+        list_drawer.setOnItemClickListener(this);
+    }
+
+    // 滑动菜单按钮点击事件
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        //去吃字符串中间空格
+        final String editItem = menuLists.get(position).getIconName().trim().replaceAll(" ","");
+        LogUtil.d(TAG,"Click " +  editItem);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        final AlertDialog dialog = builder.create();
+        //设置对话框标题：修改项
+        dialog.setTitle(editItem);
+        final View dialogView = View.inflate(MainActivity.this, R.layout.dialog_settings, null);
+        final EditText etInput = (EditText) dialogView.findViewById(R.id.etInput);
+        SpannableString s = new SpannableString("请输入" + editItem);//这里输入自己想要的提示文字
+        etInput.setHint(s);
+        //设置对话框布局
+        dialog.setView(dialogView);
+        dialog.show();
+        Button btnOk = (Button) dialogView.findViewById(R.id.ok1);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //获取输入框输入的值
+                EditText etInput =  (EditText) dialogView.findViewById(R.id.etInput);
+                final String inputValue = etInput.getText().toString().trim();
+                if (TextUtils.isEmpty(inputValue) ) {
+                    Toast.makeText(MainActivity.this, editItem + "不能为空", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                LogUtil.d(TAG,"Click "+ editItem + "value =" + inputValue);
+                if(editItem.equals("字体大小")){
+                    LogUtil.d(TAG,"Click "+ editItem + "value =" + inputValue);
+                    if (inputValue != null && webView != null) {
+                        //设置WebView中加载页面字体变焦百分比，默认100，整型数。
+                        WebSettings settings = webView.getSettings();
+                        settings.setTextZoom(Integer.parseInt(inputValue));
+                    } else {
+                        LogUtil.e(TAG, "zoom error");
+                    }
+                }
+                else if(editItem.equals("尺寸因子")){
+                    if (inputValue != null) {
+                        LogUtil.d(TAG,"Click "+ editItem + " value =" + inputValue);
+                        fontSizeFactor = Integer.parseInt(inputValue);
+                    }
+                }
+                else if(editItem.equals("亮        度")){
+                    LogUtil.d(TAG,"Click "+ editItem + "value =" + inputValue);
+                    setBrightness(Float.parseFloat(inputValue));
+                }else{
+                    LogUtil.d(TAG,"Click "+ editItem + "value " + inputValue);
+                    bFactor = Integer.parseInt(inputValue);
+                }
+                dialog.dismiss();
+            }
+        });
+
+        //关闭滑动菜单
+        drawer_layout.closeDrawer(list_drawer);
     }
 }

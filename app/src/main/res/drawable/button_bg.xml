@@ -23,7 +23,7 @@
         <shape>
             <corners android:radius="40dip"/>
             <!-- 实心 -->
-            <solid android:color="@color/color_login_bg"/>
+            <solid android:color="#303F9F"/>
             <!-- 描边 -->
             <stroke
                 android:width="3dp"

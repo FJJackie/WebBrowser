@@ -17,8 +17,8 @@ android {
         }
     }
 }
-repositories{
-    flatDir{
+repositories {
+    flatDir {
         dirs 'libs'
     }
 }
@@ -32,11 +32,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.google.android.gms:play-services-appindexing:8.4.0'
     implementation files('libs/sun.misc.BASE64Decoder.jar')
-
-    implementation files('libs/MobCommons-2016.0714.1402.jar')
-    implementation files('libs/MobTools-2016.0714.1402.jar')
-    implementation name:'SMSSDK-2.1.1',ext:'aar'
-    implementation name:'SMSSDKGUI-2.1.1',ext:'aar'
+    implementation 'com.android.support:design:25.1.0'
+    implementation 'de.hdodenhof:circleimageview:2.1.0'
 }
 
 allprojects {

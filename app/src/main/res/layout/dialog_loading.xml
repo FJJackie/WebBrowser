@@ -16,11 +16,11 @@
         android:indeterminateDrawable="@drawable/progressbar_animated" />
 
     <TextView
-        android:id="@+id/tv_loading_dialog"
+        android:id="@+id/tv_welcome_dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dip"
-        android:text="@string/loading"
+        android:text="@string/welcome"
         android:textColor="@android:color/white"
         android:textSize="@dimen/text_size_medium" />
 
