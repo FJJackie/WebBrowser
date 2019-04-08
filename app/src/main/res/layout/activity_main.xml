@@ -15,11 +15,16 @@
         <!--标题栏-->
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
+            style="@style/Toolbar.MyStyle"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+            app:navigationIcon="@mipmap/back"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:title="Hi-Browser"
+            app:titleTextAppearance="@style/Toolbar.TitleText"
+            app:titleMargin="@dimen/dp_10"
+            app:titleTextColor="@android:color/white"/>
 
         <HorizontalScrollView
             android:id="@+id/part0"
@@ -148,23 +153,6 @@
                         android:layout_height="match_parent"
                         android:layout_marginTop="30dp"
                         android:orientation="vertical">
-                        <!--URL跳转部分-->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="top">
-                            <Button
-                                android:id="@+id/go_to"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/go_to"/>
-                            <EditText
-                                android:id="@+id/url"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content" />
-                        </LinearLayout>
-
                         <!--显示控件-->
                         <LinearLayout
                             android:layout_width="match_parent"

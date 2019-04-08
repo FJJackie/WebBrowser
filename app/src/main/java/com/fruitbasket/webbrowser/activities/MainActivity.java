@@ -1,10 +1,12 @@
 package com.fruitbasket.webbrowser.activities;
 
+import java.lang.reflect.Method;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -16,7 +18,9 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -37,6 +41,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -142,6 +147,10 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     private ArrayList<Item> menuLists;
     private MyAdapter<Item> myAdapter = null;
 
+    private ListView mLv;
+    private SearchView mSearchView;
+    private SearchView.SearchAutoComplete mSearchAutoComplete;
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         Log.i(TAG, "onCreate(Bundle)");
@@ -150,6 +159,8 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         //修改状态栏颜色
         translucentStatusBar();
         setContentView(R.layout.activity_main);
+
+        setToolbar();
         initViews();
 
         //加入权限动态申请方可正常启动 否则闪退
@@ -281,7 +292,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     /**
      * 设置布局等界面参数
      */
-    private void SetLayouts(){
+    private void mSetLayouts(){
         part0 = (HorizontalScrollView) findViewById(R.id.part0);
         part1 = (LinearLayout) findViewById(R.id.part1);
         part2 = (LinearLayout) findViewById(R.id.part2);
@@ -304,15 +315,9 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     /**
      * 2018/12/06
      */
-    private void FindViewsById(){
+    private void mFindViewsById(){
         View.OnClickListener listener = new MyOnclickListener();
-        goTo = (Button) findViewById(R.id.go_to);
-        goTo.setOnClickListener(listener);
-        url = (EditText) findViewById(R.id.url);
-
-
         //sizeView = (TextView) findViewById(R.id.size_view);
-
         backgroundBrightness = (TextView) findViewById(R.id.background_brightness);
         brightnessView = (TextView) findViewById(R.id.brightness_view);
 
@@ -320,33 +325,53 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         tvMoveDistance = (TextView) findViewById(R.id.tv_move_distance);
         tvEyeDistance = (TextView) findViewById(R.id.tv_eye_distance);
         tvAngle = (TextView) findViewById(R.id.tv_angle);
+    }
 
-        //webView 部分
+    //初始化webView网页
+    private void initWebView(){
         webView = (WebView) findViewById(R.id.web_view);
+        fillWebViewWithUrl(webView);
+        //fillWebViewWithText(webView);//文本填充网页
+    }
+    //url填充webView
+    private void fillWebViewWithUrl(WebView webView){
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new JsObject(MainActivity.this), "injectedObject");
         webView.loadUrl("https://www.v2ex.com/t/350509#reply106");
-
-
-        //mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        //NavigationView navView = (NavigationView)findViewById(R.id.nav_view);
+    }
+    //文本填充webView
+    private void fillWebViewWithText(WebView webView){
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        sb.append("<head>");
+        sb.append("<title>Welcome !</title>");
+        sb.append("</head>");
+        sb.append("<body>");
+        sb.append("<p style=\"font-family:Calibri\">");
+        sb.append("The Bible (from Koine Greek τὰ βιβλία, tà biblía, \"the books\"[1]) is a collection of sacred texts or scriptures that Jews and Christians consider to be a product of divine inspiration and a record of the relationship between God and humans.\n" +
+                "Many different authors contributed to the Bible. And what is regarded as canonical text differs depending on traditions and groups; a number of Bible canons have evolved, with overlapping and diverging contents.[2] The Christian Old Testament overlaps with the Hebrew Bible and the Greek Septuagint; the Hebrew Bible is known in Judaism as the Tanakh. The New Testament is a collection of writings by early Christians, believed to be mostly Jewish disciples of Christ, written in first-century Koine Greek. These early Christian Greek writings consist of narratives, letters, and apocalyptic writings. Among Christian denominations there is some disagreement about the contents of the canon, primarily the Apocrypha, a list of works that are regarded with varying levels of respect.\n" +
+                "Attitudes towards the Bible also differ amongst Christian groups. Roman Catholics, Anglicans and Eastern Orthodox Christians stress the harmony and importance of the Bible and sacred tradition, while Protestant churches focus on the idea of sola scriptura, or scripture alone. This concept arose during the Protestant Reformation, and many denominations today support the use of the Bible as the only source of Christian teaching.\n" +
+                "With estimated total sales of over 5 billion copies, the Bible is widely considered to be the best-selling book of all time.[3][4] It has estimated annual sales of 100 million copies,[5][6] and has been a major influence on literature and history, especially in the West where the Gutenberg Bible was the first mass-printed book. The Bible was the first book ever printed using movable type.");
+        sb.append("</p>");
+        sb.append("</body>");
+        sb.append("</html>");
+        webView.loadData(sb.toString(), "text/html", "utf-8");
     }
 
     //初始化布局和组件
     private void initViews() {
-        //使用ToolBar控件替代ActionBar控件
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
         //设置滑动菜单
-        setDrawerLayout();
+        mSetDrawerLayout();
 
         //part1初始化和获取控件
-        SetLayouts();
+        mSetLayouts();
 
         //part2初始化和获取控件
-        FindViewsById();
+        mFindViewsById();
+
+        //初始化webView网页
+        initWebView();
     }
 
     /**
@@ -674,46 +699,13 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         webView.loadUrl(js);
     }
 
-    //按钮点击监听类：搜索框  字体大小、尺寸因子、亮度、亮度因子设置按钮响应
+    //按钮点击监听类: 按钮响应---暂未监听按钮
     private class MyOnclickListener implements View.OnClickListener {
-
         @Override
         public void onClick(View view) {
             switch (view.getId()) {
-                //访问网页
-                case R.id.go_to:
-                    LogUtil.i(TAG, "Button go to has been clicked");
-                    String urlString = url.getText().toString().trim();
-                    LogUtil.i(TAG,urlString);
-                    LogUtil.d(TAG, "onClick: webView = null?"+ (webView == null));
-                    if (webView != null) {
-                        if (TextUtils.isEmpty(urlString) == false) {
-                            webView.loadUrl(urlString);
-                        } else {
-                            StringBuilder sb = new StringBuilder();
-                            sb.append("<html>");
-                            sb.append("<head>");
-                            sb.append("<title>Welcome !</title>");
-                            sb.append("</head>");
-                            sb.append("<body>");
-
-                            sb.append("<p style=\"font-family:Calibri\">");
-                            sb.append("The Bible (from Koine Greek τὰ βιβλία, tà biblía, \"the books\"[1]) is a collection of sacred texts or scriptures that Jews and Christians consider to be a product of divine inspiration and a record of the relationship between God and humans.\n" +
-                                    "Many different authors contributed to the Bible. And what is regarded as canonical text differs depending on traditions and groups; a number of Bible canons have evolved, with overlapping and diverging contents.[2] The Christian Old Testament overlaps with the Hebrew Bible and the Greek Septuagint; the Hebrew Bible is known in Judaism as the Tanakh. The New Testament is a collection of writings by early Christians, believed to be mostly Jewish disciples of Christ, written in first-century Koine Greek. These early Christian Greek writings consist of narratives, letters, and apocalyptic writings. Among Christian denominations there is some disagreement about the contents of the canon, primarily the Apocrypha, a list of works that are regarded with varying levels of respect.\n" +
-                                    "Attitudes towards the Bible also differ amongst Christian groups. Roman Catholics, Anglicans and Eastern Orthodox Christians stress the harmony and importance of the Bible and sacred tradition, while Protestant churches focus on the idea of sola scriptura, or scripture alone. This concept arose during the Protestant Reformation, and many denominations today support the use of the Bible as the only source of Christian teaching.\n" +
-                                    "With estimated total sales of over 5 billion copies, the Bible is widely considered to be the best-selling book of all time.[3][4] It has estimated annual sales of 100 million copies,[5][6] and has been a major influence on literature and history, especially in the West where the Gutenberg Bible was the first mass-printed book. The Bible was the first book ever printed using movable type.");
-                            sb.append("</p>");
-
-                            sb.append("</body>");
-                            sb.append("</html>");
-                            webView.loadData(sb.toString(), "text/html", "utf-8");
-                        }
-                    } else {
-                        Log.e(TAG, "Go ot error");
-                    }
-                    break;
+                case 1:
                 default:
-
             }
         }
     }
@@ -740,12 +732,91 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     }
 
 //**************************************************************************************************************
+    //设置toolbar
+    private void setToolbar(){
+        //使用ToolBar控件替代ActionBar控件
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mSearchAutoComplete.isShown()) {
+                    try {
+                        mSearchAutoComplete.setText("");//清除文本
+                        //利用反射调用收起SearchView的onCloseClicked()方法
+                        Method method = mSearchView.getClass().getDeclaredMethod("onCloseClicked");
+                        method.setAccessible(true);
+                        method.invoke(mSearchView);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    finish();
+                }
+            }
+        });
+    }
 
     //加载toolbar.xml菜单文件
+    @SuppressLint("RestrictedApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar, menu);
-        return true;
+        MenuItem searchItem = menu.findItem(R.id.menu_search);
+
+        //通过MenuItem得到SearchView
+        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        mSearchAutoComplete = (SearchView.SearchAutoComplete) mSearchView.findViewById(R.id.search_src_text);
+        //mSearchView.setMaxWidth(500);//设置最大宽度
+        //设置自定义提交按钮
+        mSearchView.setSubmitButtonEnabled(true);
+        ImageView iv_submit = (ImageView) mSearchView.findViewById(R.id.search_go_btn);
+        iv_submit.setImageResource(R.mipmap.submit_search);
+        //设置输入框提示语
+        mSearchView.setQueryHint("请输入搜索内容...");
+        //设置触发查询的最少字符数（默认2个字符才会触发查询）
+        mSearchAutoComplete.setThreshold(0);
+
+        //设置输入框提示文字样式
+        mSearchAutoComplete.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
+        mSearchAutoComplete.setTextColor(getResources().getColor(android.R.color.background_light));
+        mSearchAutoComplete.setTextSize(14);
+
+        //设置搜索框有字时显示叉叉，无字时隐藏叉叉
+        mSearchView.onActionViewExpanded();
+        mSearchView.setIconified(true);
+
+        //监听SearchView的内容
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            //输入完成后，点击回车或是完成键
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                LogUtil.d(TAG,"searchInput:" + s);
+                String urlString = s.trim();
+                LogUtil.d(TAG, "onClick: webView = null?"+ (webView == null));
+                if (webView != null) {
+                    if (TextUtils.isEmpty(urlString) == false && urlString.startsWith("www.")) {
+                        LogUtil.d(TAG,"It is legal urlString");
+                        webView.loadUrl("http://" + urlString);
+                    } else {
+                        fillWebViewWithText(webView);
+                    }
+                } else {
+                    Log.e(TAG, "Go ot error");
+                }
+                return true;
+            }
+
+            //查询文本框有变化时事件
+            @Override
+            public boolean onQueryTextChange(String s) {
+                LogUtil.d(TAG,"searchChange:" + s);
+                //Cursor cursor = TextUtils.isEmpty(s) ? null : queryData(s);
+                return false;
+            }
+        });
+        return super.onCreateOptionsMenu(menu);
+
     }
 
     //实现5.0以上状态栏透明(默认状态是半透明)
@@ -805,7 +876,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         return true;
     }
 
-    private void setDrawerLayout(){
+    private void mSetDrawerLayout(){
         drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
         list_drawer = (ListView) findViewById(R.id.list_drawer);
         menuLists = new ArrayList<Item>();
@@ -879,7 +950,6 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
                 dialog.dismiss();
             }
         });
-
         //关闭滑动菜单
         drawer_layout.closeDrawer(list_drawer);
     }
