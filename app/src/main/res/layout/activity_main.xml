@@ -27,7 +27,7 @@
             app:titleTextColor="@android:color/white"/>
 
         <HorizontalScrollView
-            android:id="@+id/part0"
+            android:id="@+id/horizontalScrollView_part"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/black"
@@ -59,7 +59,7 @@
 
 
         <LinearLayout
-            android:id="@+id/part1"
+            android:id="@+id/camera_part"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="visible">
@@ -80,7 +80,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="@dimen/dp_60"
+                    android:layout_marginTop="@dimen/dp_40"
                     android:gravity="center_horizontal"
                     android:textColor="#000"
                     android:text="@string/currentDistance"/>
@@ -136,7 +136,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/part2"
+            android:id="@+id/scrollView_part"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <ScrollView

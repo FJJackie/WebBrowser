@@ -73,9 +73,9 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
     private static final int BRIGHTNESS_FACTOR_DEFAULT = 1;
     private static final int FONT_SIZE_FACTOR_DEFAULT = 1;
 
-    private HorizontalScrollView part0;
-    private LinearLayout part1;
-    private LinearLayout part2;
+    private HorizontalScrollView horizontalScrollView_part;
+    private LinearLayout camera_part;
+    private LinearLayout scrollView_part;
 
 
     //UI控件部分
@@ -266,11 +266,11 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
 
             case MessageHUB.DONE_CALIBRATION:
                 _calibrateButton.setBackgroundResource(R.drawable.green_button);
-                //part1.setVisibility(View.INVISIBLE);
-                part0.setVisibility(View.VISIBLE);
-                part1.setVisibility(View.GONE);
-                part2.setVisibility(View.VISIBLE);
-                //part2.setVisibility(View.INVISIBLE);
+                //camera_part.setVisibility(View.INVISIBLE);
+                horizontalScrollView_part.setVisibility(View.VISIBLE);
+                camera_part.setVisibility(View.GONE);
+                scrollView_part.setVisibility(View.VISIBLE);
+                //scrollView_part.setVisibility(View.INVISIBLE);
                 break;
 
             default:
@@ -293,9 +293,9 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
      * 设置布局等界面参数
      */
     private void mSetLayouts(){
-        part0 = (HorizontalScrollView) findViewById(R.id.part0);
-        part1 = (LinearLayout) findViewById(R.id.part1);
-        part2 = (LinearLayout) findViewById(R.id.part2);
+        horizontalScrollView_part = (HorizontalScrollView) findViewById(R.id.horizontalScrollView_part);
+        camera_part = (LinearLayout) findViewById(R.id.camera_part);
+        scrollView_part = (LinearLayout) findViewById(R.id.scrollView_part);
 
         _mySurfaceView = (CameraSurfaceView) findViewById(R.id.surface_camera);
         //设置相机预览窗口宽高
@@ -364,10 +364,10 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
         //设置滑动菜单
         mSetDrawerLayout();
 
-        //part1初始化和获取控件
+        //camera_part初始化和获取控件
         mSetLayouts();
 
-        //part2初始化和获取控件
+        //scrollView_part初始化和获取控件
         mFindViewsById();
 
         //初始化webView网页
@@ -815,6 +815,7 @@ public class MainActivity extends BaseActivity implements MessageListener, Senso
                 return false;
             }
         });
+
         return super.onCreateOptionsMenu(menu);
 
     }
